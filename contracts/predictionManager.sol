@@ -18,18 +18,18 @@ contract predictionManager {
   }
   struct Prediction {
     address payable bidAddr;
-    address payable askAddr;
+    address payable challengerAddr;
     uint bidAmount;
     uint bidOdds;
-    uint askAmount;
-    uint gameID;
     uint bidgameWinnerID;
+    uint challengerAmount;
+    uint gameID;
     bool bidWin;
     bool isActive;
   }
   function receiveNewBid(Prediction pred) public payable {
     pred.isActive = true;
-    pred.askAddr = '0x0';
+    pred.challengerAddr = '0x0';
     predictionList[predID] = pred;
     predID++;
   }
@@ -43,7 +43,7 @@ contract predictionManager {
       //notify ask that they have lost
     }
     else if (pred.bidgameWinnerID != winnerID) {
-      winAmount = pred.askAmount
+      winAmount = pred.challengerAmount
       // send winAmount to asker
       // notify bidder that they have lost
     }
@@ -52,8 +52,8 @@ contract predictionManager {
     }
   }
   function updateBidWithAsk public payable (uint predID, address addr, uint amount){
-    predictionList[predID].askAddr = addr;
-    predictionList[predID].askAmount = amount;
+    predictionList[predID].challengerAddr = addr;
+    predictionList[predID].challengerAmount = amount;
     //TODO ensure bid amount * bid odds = ask amount
   }
 }

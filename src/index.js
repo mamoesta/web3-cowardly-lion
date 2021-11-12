@@ -5,17 +5,15 @@ import ReactDOM from 'react-dom';
 import Jumbotron from 'react-bootstrap/Jumbotron';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
-import { Form, FormControl, InputGroup } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 
 // Importing the Bootstrap CSS
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Web3 from 'web3';
 import {PLACE_BET_ABI, PLACE_BET_ADDR} from './config'
+
 // This function detects most providers injected at window.ethereum
 import detectEthereumProvider from '@metamask/detect-provider';
-
-
-
 class Main extends React.Component {
   
   async componentWillMount() {
@@ -25,6 +23,7 @@ class Main extends React.Component {
   async loadBlockchainData() {
     const provider = await detectEthereumProvider();
     if (provider) {
+      
       // From now on, this should always be true:
       // provider === window.ethereum
       let web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545")
@@ -96,20 +95,33 @@ class Main extends React.Component {
           <h4>Current wallet address {this.state.defaultAccount}</h4>
           <h4>Balance {this.state.bal}</h4>
           <h2>
-            Options:
+            Place A Bid:
           </h2>
           <Form onSubmit={this.handleSubmit}>
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>ETH to wager</Form.Label>
-              <Form.Control type="text"/>
+            <Form.Group>
+              <Form.Label>ETH to bid</Form.Label>
+              <Form.Control type="text" controlid="bidAmount"/>
               <Form.Text className="text-muted">
                 Foo bar baz
               </Form.Text>
             </Form.Group>
+            <Form.Group controlId="formBasicSelect">
+              <Form.Label>Select Win Likelihood</Form.Label>
+              <Form.Control as="select" controlid="bidOdds">
+                <option value="0">25</option>
+                <option value="1">50</option>
+                <option value="2">75</option>
+              </Form.Control>
+              <Form.Label>Select Winning Team</Form.Label>
+              <Form.Control as="select" controlid="bidWinningTeam">
+                <option value="0">Lions</option>
+                <option value="1">Packers</option>
+              </Form.Control>
+          </Form.Group>
             <Button variant="primary" type="submit">
               Submit
             </Button>
-</Form>
+          </Form>
         </Jumbotron>
       </Container>
     )
