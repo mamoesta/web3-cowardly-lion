@@ -29,15 +29,27 @@ contract predictionManager {
   }
   function receiveNewBid(Prediction pred) public payable {
     pred.isActive = true;
-    pred.askAddr = '';
-    addPrediction(pred);
+    pred.askAddr = '0x0';
     predictionList[predID] = pred;
     predID++;
   }
 
-  function returnResults(Prediction pred, bool bidWin) {
+  function returnResults(Prediction pred, uint winnerID) {
     pred.isActive = false;
-    // TODO send money to winner (minus fees), tell loser that they lost
+    uint winAmount;
+    if (pred.bidgameWinnerID == winnerID){
+      winAmount = pred.bidAmount * pred.bidOdds;
+      // send winAmount to bidder
+      //notify ask that they have lost
+    }
+    else if (pred.bidgameWinnerID != winnerID) {
+      winAmount = pred.askAmount
+      // send winAmount to asker
+      // notify bidder that they have lost
+    }
+    else {
+      // return the money to everyone - perhaps in the case of a tie or some other uncaught result
+    }
   }
   function updateBidWithAsk public payable (uint predID, address addr, uint amount){
     predictionList[predID].askAddr = addr;
