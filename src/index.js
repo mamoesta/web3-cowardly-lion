@@ -29,7 +29,6 @@ class Main extends React.Component {
       // provider === window.ethereum
       let web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:7545")
       const accounts = await window.ethereum.request({method: 'eth_requestAccounts'});
-      console.log(web3.eth.defaultAccount)
       const defaultAccount = accounts[0]
       var bal = (await web3.eth.getBalance(defaultAccount))/1000000000000000000
       this.setState({bal})
@@ -59,9 +58,11 @@ class Main extends React.Component {
     }
     this.fundContract = this.fundContract.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.fundContractMethod = this.fundContractMethod.bind(this)
   }
-  async fundContract (amount_num) {
-    await this.state.web3.eth.sendTransaction({from: this.state.defaultAccount, to:PLACE_BET_ADDR, value: this.state.web3.utils.toWei(amount_num, 'ether')},
+  // Send ether to main contract (no method call)
+  async fundContract (amount) {
+    await this.state.web3.eth.sendTransaction({from: this.state.defaultAccount, to:PLACE_BET_ADDR, value: this.state.web3.utils.toWei(amount, 'ether')},
       function(error,txHash) {
         if(!error) {
           console.log(txHash)
@@ -72,10 +73,20 @@ class Main extends React.Component {
       })
     
   }
+  // Send an int to param contract method
+  async fundContractMethod(amount) {
+    const amount_num = parseInt(amount)
+    this.state.placeBet.methods.receive(amount_num).send({from: this.state.defaultAccount, value: this.state.web3.utils.toWei(amount, 'ether')}).once('transactionHash', function(hash)
+    { console.log('txhash: ', hash) })
+    .once('receipt', function(receipt){ console.log('receipt: ', receipt.events) })
+    .on('error', function(error){ console.log(error) })
+    //console.log("Total Funds in the contract since init: ")
+  }
   async handleSubmit(event) {
-    var amount_num = event.target[0].value
+    var amount = event.target[0].value
     event.preventDefault()
-    await this.fundContract(amount_num)
+    //await this.fundContract(amount)
+    await this.fundContractMethod(amount)
   }
     render (){
     return (
