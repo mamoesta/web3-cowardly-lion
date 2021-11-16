@@ -82,7 +82,7 @@ class Main extends React.Component {
     //console.log("Total Funds in the contract since init: ")
   }
   async handleSubmit(event) {
-    var amount = event.target[0].value
+    var amount = event.target[1].value
     event.preventDefault()
     //await this.fundContract(amount)
     await this.fundContractMethod(amount)
@@ -100,26 +100,24 @@ class Main extends React.Component {
           <Form onSubmit={this.handleSubmit}>
             <Form.Group>
               <Form.Label>ETH to bid</Form.Label>
-              <Form.Control type="text" controlid="bidAmount"/>
+              <Form.Control type="text"/>
               <Form.Text className="text-muted">
                 Foo bar baz
               </Form.Text>
-            </Form.Group>
-            <Form.Group controlId="formBasicSelect">
               <Form.Label>Select Win Likelihood</Form.Label>
-              <Form.Control as="select" controlid="bidOdds">
-                <option value="0">25</option>
-                <option value="1">50</option>
-                <option value="2">75</option>
+              <Form.Control as="select">
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="75">75</option>
               </Form.Control>
               <Form.Label>Select Winning Team</Form.Label>
-              <Form.Control as="select" controlid="bidWinningTeam">
+              <Form.Control as="select">
                 <option value="0">Lions</option>
                 <option value="1">Packers</option>
               </Form.Control>
           </Form.Group>
             <Button variant="primary" type="submit">
-              Submit
+              Submit Bid
             </Button>
           </Form>
         </Jumbotron>
