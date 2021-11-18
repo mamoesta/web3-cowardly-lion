@@ -7,10 +7,9 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import { Form } from 'react-bootstrap';
 
-// Importing the Bootstrap CSS
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Web3 from 'web3';
-import {PLACE_BET_ABI, PLACE_BET_ADDR} from './config'
+import {predManagerABI, predManagerAddress, gameManagerABI, gameManagerAddress} from './config'
 
 // This function detects most providers injected at window.ethereum
 import detectEthereumProvider from '@metamask/detect-provider';

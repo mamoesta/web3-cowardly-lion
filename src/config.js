@@ -1,5 +1,8 @@
-export const PLACE_BET_ADDR = '0x7fcBBE7D3Af193Baf96abe2bCd801C560CccFcB1'
-export const PLACE_BET_ABI = [
+export const gameManagerAddress = ''
+export const gameManagerABI = []
+
+export const predManagerAddress = '0x7fcBBE7D3Af193Baf96abe2bCd801C560CccFcB1'
+export const predManagerABI = [
   {
     "stateMutability": "payable",
     "type": "fallback"
