@@ -1,17 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-contract gameManager {
-  mapping (uint=>Game) gameList;
-  uint gameID;
+contract GameManager {
+ 
+  uint gameID = 1;
   uint status;
-  address owner;
-  
-  constructor() public {   
-    owner = msg.sender;
-    gameID = 0;
+  address public owner = msg.sender;
 
-  }
   struct Game {
     string homeTeam;
     string awayTeam;
@@ -21,10 +16,14 @@ contract gameManager {
     bool isLocked;
     uint startTime;
   }
-  
+  mapping (uint => Game) public gameList;
   function createGame(Game memory gm) public returns (bool){
     gameList[gameID] = gm;
     gameID ++;
+    return true;
+  }
+  function unlockGame (uint id) public returns (bool){
+    gameList[id].isLocked = false;
     return true;
   }
   function lockGame (uint id) public returns (bool){
@@ -37,7 +36,7 @@ contract gameManager {
     gameList[id].awayScore = awayScore;
     return true;
   }
-  function getGame(uint id) public returns (Game memory gm){
+  function getGame(uint id) public view returns (Game memory gm){
     return gameList[id];
   }
 }

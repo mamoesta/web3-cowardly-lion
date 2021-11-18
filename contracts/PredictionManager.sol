@@ -2,37 +2,42 @@
 pragma solidity >=0.4.22 <0.9.0;
 
 contract PredictionManager {
-  address payable owner;
-  uint status;
-  uint totalPredCount;
-  uint predID;
-
-  //a user can only have one active prediction at a time
-  mapping(address=>Prediction) predictionList;
+  address payable public owner = payable(msg.sender);
+  uint totalPredCount = 0;
+  uint predID = 0;
 
   fallback() external payable{}
+  receive() external payable{}
   
-  constructor() public {
-    owner = payable(msg.sender);
-    totalPredCount = 0;
-    predID = 0;
-  }
   struct Prediction {
     address payable bidAddr;
     address payable challengerAddr;
     uint bidAmount;
     uint bidOdds;
-    uint bidgameWinnerID;
+    string bidGameWinner;
     uint challengerAmount;
     uint gameID;
     bool bidWin;
     //a bid is active if no challenger is found
     bool isActive;
   }
-  function receiveNewBid(Prediction memory pred) public payable {
+  
+  //a user can only have one active prediction at a time
+  mapping (address => Prediction) public predictionList;
+  
+  function receiveNewBid(uint  _bidAmount, uint  _bidOdds, string memory _bidGameWinner, uint  _gameID) public payable {
+    Prediction memory pred;
+    pred.bidAddr = payable(msg.sender);
+    pred.challengerAddr = payable(msg.sender);
+    pred.bidAmount = _bidAmount;
+    pred.bidOdds = _bidOdds;
+    pred.bidGameWinner = _bidGameWinner;
+    pred.challengerAmount = 0;
+    pred.gameID = _gameID;
+    pred.bidWin = false;
     pred.isActive = true;
-    pred.challengerAddr = owner;
     predictionList[msg.sender] = pred;
+
   }
 
   function returnResults() public returns (bool) {
@@ -62,5 +67,8 @@ contract PredictionManager {
     predictionList[creatorAddr].challengerAddr = challengeAddr;
     predictionList[creatorAddr].challengerAmount = amount;
     //TODO ensure bid amount * bid odds = ask amount
+  }
+  function getPred( address addr) public view returns (Prediction memory pred){
+    return predictionList[addr];
   }
 }
