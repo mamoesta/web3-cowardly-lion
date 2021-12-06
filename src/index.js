@@ -33,10 +33,14 @@ class Main extends React.Component {
       this.setState({defaultAccount})
       this.setState({web3})
       try {
-        var placeBet = await new web3.eth.Contract(PLACE_BET_ABI,PLACE_BET_ADDR)
-        this.setState({placeBet})
+        var predManager = await new web3.eth.Contract(predManagerABI,predManagerAddress)
+        var gameManager = await new web3.eth.Contract(gameManagerABI,gameManagerAddress)
+        this.setState({predManager, gameManager})
+        const openGames = await this.getOpenGames()
+        this.setState({openGames})
+        console.log(this.state.openGames)
       } catch(error){
-        console.log('Error: contract could not be found: ', error)
+        console.log('Error: contracts could not be found: ', error)
       }
     } else {
       //bail
@@ -51,16 +55,18 @@ class Main extends React.Component {
       bal: 0,
       ethEnabled: false,
       amount: 0,
-      placeBet: {},
-      web3: {}
+      predManager: {},
+      web3: {},
+      openGames: []
     }
     this.fundContract = this.fundContract.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.fundContractMethod = this.fundContractMethod.bind(this)
+    this.getOpenGames = this.getOpenGames.bind(this)
   }
   // Send ether to main contract (no method call)
   async fundContract (amount) {
-    await this.state.web3.eth.sendTransaction({from: this.state.defaultAccount, to:PLACE_BET_ADDR, value: this.state.web3.utils.toWei(amount, 'ether')},
+    await this.state.web3.eth.sendTransaction({from: this.state.defaultAccount, to:predManagerAddress, value: this.state.web3.utils.toWei(amount, 'ether')},
       function(error,txHash) {
         if(!error) {
           console.log(txHash)
@@ -74,7 +80,7 @@ class Main extends React.Component {
   // Send an int to param contract method
   async fundContractMethod(amount) {
     const amount_num = parseInt(amount)
-    this.state.placeBet.methods.receive(amount_num).send({from: this.state.defaultAccount, value: this.state.web3.utils.toWei(amount, 'ether')}).once('transactionHash', function(hash)
+    this.state.predManager.methods.receive(amount_num).send({from: this.state.defaultAccount, value: this.state.web3.utils.toWei(amount, 'ether')}).once('transactionHash', function(hash)
     { console.log('txhash: ', hash) })
     .once('receipt', function(receipt){ console.log('receipt: ', receipt.events) })
     .on('error', function(error){ console.log(error) })
@@ -86,43 +92,67 @@ class Main extends React.Component {
     //await this.fundContract(amount)
     await this.fundContractMethod(amount)
   }
-    render (){
-    return (
-      <Container>
-        <Jumbotron>
-          <h1 className="header">Welcome to the Cowardly Lion</h1>
-          <h4>Current wallet address {this.state.defaultAccount}</h4>
-          <h4>Balance {this.state.bal}</h4>
-          <h2>
-            Place A Bid:
-          </h2>
-          <Form onSubmit={this.handleSubmit}>
-            <Form.Group>
-              <Form.Label>ETH to bid</Form.Label>
-              <Form.Control type="text"/>
-              <Form.Text className="text-muted">
-                Foo bar baz
-              </Form.Text>
-              <Form.Label>Select Win Likelihood</Form.Label>
-              <Form.Control as="select">
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="75">75</option>
-              </Form.Control>
-              <Form.Label>Select Winning Team</Form.Label>
-              <Form.Control as="select">
-                <option value="0">Lions</option>
-                <option value="1">Packers</option>
-              </Form.Control>
-          </Form.Group>
-            <Button variant="primary" type="submit">
-              Submit Bid
-            </Button>
-          </Form>
-        </Jumbotron>
-      </Container>
-    )
+  async getOpenGames() {
+    var games = [];
+    let valid = true;
+    let i = 0;
+    while(valid){
+      var res = await this.state.gameManager.methods.getGame(i).call();
+      games[i] = res;
+      i ++;
+      if(res.awayTeam === ''){
+        valid = false;
+      }
+    }
+    games.pop()
+    return games;
   }
+  render (){
+  return (
+    <Container>
+      <Jumbotron>
+        <h1 className="header">Welcome to the Cowardly Lion</h1>
+        <h4>Current wallet address {this.state.defaultAccount}</h4>
+        <h4>Balance {this.state.bal}</h4>
+        <h2>
+          Place A Bid:
+        </h2>
+        <Form onSubmit={this.handleSubmit}>
+          <Form.Group>
+            <Form.Label>ETH to bid</Form.Label>
+            <Form.Control type="text"/>
+            <Form.Text className="text-muted">
+              Foo bar baz
+            </Form.Text>
+            <Form.Label>Select Win Likelihood</Form.Label>
+            <Form.Control as="select">
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="75">75</option>
+            </Form.Control>
+            <Form.Label>Select Winning Team</Form.Label>
+            <Form.Control as="select">
+              <option value="0">Lions</option>
+              <option value="1">Packers</option>
+            </Form.Control>
+        </Form.Group>
+          <Button variant="primary" type="submit">
+            Submit Bid
+          </Button>
+        </Form>
+      </Jumbotron>
+      <div>
+        <ul>
+          {this.state.openGames.map((game,index) => (
+            <li key = {index}>
+              {game.homeTeam}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Container>
+  )
+}
 }
 
 ReactDOM.render(<Main />, document.getElementById('root'));

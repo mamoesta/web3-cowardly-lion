@@ -3,7 +3,7 @@ pragma solidity >=0.4.22 <0.9.0;
 
 contract GameManager {
  
-  uint gameID = 1;
+  uint gameID = 0;
   uint status;
   address public owner = msg.sender;
 

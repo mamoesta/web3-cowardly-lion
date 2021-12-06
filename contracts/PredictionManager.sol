@@ -3,7 +3,7 @@ pragma solidity >=0.4.22 <0.9.0;
 
 contract PredictionManager {
   address public owner = msg.sender;
-  uint public predId = 1;
+  uint public predId = 0;
 
   fallback() external payable{}
   receive() external payable{}
@@ -55,7 +55,6 @@ contract PredictionManager {
     }
     
   }
-
   function returnResults() public returns (bool) {
     address payable sourceAddr = payable(msg.sender);
     Prediction memory pred = predictionList[addressBook[msg.sender]];
@@ -94,7 +93,7 @@ contract PredictionManager {
     
     predictionList[predIndex].challengerAddr = challengerAddr;
     predictionList[predIndex].challengerAmount = amount;
-    predictionlist[predIndex].hasChallenger = true;
+    predictionList[predIndex].hasChallenger = true;
   }
   function getPred(uint index) public view returns (Prediction memory pred){
     return predictionList[index];
