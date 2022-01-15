@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <0.9.0;
+pragma solidity ^0.8.4;
 
 contract PredictionManager {
   address public owner = msg.sender;
@@ -26,7 +26,7 @@ contract PredictionManager {
   mapping (address => uint) public addressBook;
   mapping (uint => Prediction) public predictionList;
   
-  function hasActiveBid(address addr) public returns(bool){
+  function hasActiveBid(address addr) public view returns(bool){
     //check to determine if an address has an open bid
     return predictionList[addressBook[addr]].isFinal;
   }
@@ -65,19 +65,19 @@ contract PredictionManager {
     
     if(!pred.hasChallenger && sourceAddr == pred.bidAddr){
       uint amount = pred.bidAmount;
-      (bool sent, bytes memory data) = pred.bidAddr.call{value: amount}("");
+      (bool sent,) = pred.bidAddr.call{value: amount}("");
       require(sent, "Failed to send Ether");
       return true;
     }
     else if (pred.bidAddr == sourceAddr && pred.bidWin){
       uint winAmount = pred.bidAmount + pred.challengerAmount;
-      (bool sent, bytes memory data) = pred.bidAddr.call{value: winAmount}("");
+      (bool sent, ) = pred.bidAddr.call{value: winAmount}("");
       require(sent, "Failed to send Ether");
       return true;
     }
     else if (pred.challengerAddr == sourceAddr && !pred.bidWin) {
       uint winAmount = pred.bidAmount + pred.challengerAmount;
-      (bool sent, bytes memory data) = pred.bidAddr.call{value: winAmount}("");
+      (bool sent, ) = pred.bidAddr.call{value: winAmount}("");
       require(sent, "Failed to send Ether");
       return true;
     }
