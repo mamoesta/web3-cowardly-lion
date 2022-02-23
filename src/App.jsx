@@ -3,8 +3,13 @@ import {ethers} from "ethers";
 import "./App.css";
 import gmABI from "./utils/GameManager.json";
 import predABI from "./utils/PredictionManager.json";
+import { id } from "ethers/lib/utils";
 const App = () => {
-  const dummyGame = {"homeTeam":"Falcons","awayTeam":"Panthers","homeScore":99, "awayScore": 91,"isFinal": true,"isLocked": false,"startTime":12345}
+  const [homeTeam, setHomeTeam] = useState("");
+  const [awayTeam, setAwayTeam] = useState("");
+  const [homeScore, setHomeScore] = useState("");
+  const [awayScore, setAwayScore] = useState("");
+  const [gameId, setGameId] = useState("");
   const gameABI = gmABI.abi;
   const gameAddress = "0xa0487053F053Cfa1f6C4025E6Ee71a2Fff08abb7";
   const predictionABI = predABI.abi;
@@ -51,16 +56,20 @@ const App = () => {
       console.log(error)
     }
   }
-  const addGame = async () => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const game = {"homeTeam": homeTeam, "awayTeam":awayTeam,"homeScore": homeScore,"awayScore": awayScore, "isFinal":false,"isLocked": false, "startTime": Date.now()}
+    console.log("Here is the game: ", game)
+    await addGame(game);
+  }
+  const addGame = async (game) => {
     try {
       const {ethereum } = window;
       if (ethereum){
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
-        const gameTxn = await gameAddressContract.createGame(dummyGame);
-        console.log("Added Game: ", dummyGame)
-        console.log("Mining...", gameTxn.hash);
+        const gameTxn = await gameAddressContract.createGame(game);
         await gameTxn.wait();
         console.log("Mined -- ", gameTxn.hash);
      }
@@ -70,18 +79,19 @@ const App = () => {
       console.log(error)
     }
   }
-  const getGame = async () => {
+  const getGame = async (event) => {
+    event.preventDefault();
     try {
       const {ethereum} = window;
       if (ethereum) {        
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
-        const gameTxn = await gameAddressContract.getGame();
-        console.log(gameTxn.homeTeam);
+        const gameTxn = await gameAddressContract.getGame(parseInt(gameId));
+        console.log("Home team for game Id", gameId, ":" ,gameTxn.homeTeam)
       }
       else {
-        console.log('ethereum object DNE')
+        console.log('ethereum object does not exist')
       }
     }
     catch(error){
@@ -91,8 +101,6 @@ const App = () => {
   useEffect(() => {
     checkIfWalletIsConnected();
   }, [])
-
-
   return(
     <div>
       <li>Game Contract Address:  {gameAddress}!</li>
@@ -103,14 +111,34 @@ const App = () => {
           </button>
         )}
       {currentAccount && (
-        <button onClick={addGame}>
-          Add a Dummy Game
-        </button>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Home Team:
+            <input type="text" value={homeTeam} onChange={(e) => setHomeTeam(e.target.value)}/>
+          </label>
+          <label>
+            Away Team:
+            <input type="text" value={awayTeam} onChange={(e) => setAwayTeam(e.target.value)}/>
+          </label>
+          <label>
+            Home Score:
+            <input type="number" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
+          </label>
+          <label>
+            Away Score:
+            <input type="number" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
+          </label>
+          <input type="submit" value="Submit" />
+        </form>
       )}
       {currentAccount && (
-        <button onClick={getGame}>
-          Get Game ID 0
-        </button>
+       <form onSubmit = {getGame}>
+         <label>
+           Game ID
+           <input type="number" value = {gameId} onChange={(e) => setGameId(e.target.value)} />
+         </label>
+         <input type="submit" value="Get Game ID" />
+       </form>
       )}
     </div>
   )
