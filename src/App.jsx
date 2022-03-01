@@ -10,6 +10,8 @@ const App = () => {
   const [homeScore, setHomeScore] = useState("");
   const [awayScore, setAwayScore] = useState("");
   const [gameId, setGameId] = useState("");
+  const [showGames, setShowGames] = useState(false);
+  const [gameList, setGameList] = useState([]);
   const gameABI = gmABI.abi;
   const gameAddress = "0xa0487053F053Cfa1f6C4025E6Ee71a2Fff08abb7";
   const predictionABI = predABI.abi;
@@ -79,16 +81,28 @@ const App = () => {
       console.log(error)
     }
   }
-  const getGame = async (event) => {
+  const getGames = async (event) => {
     event.preventDefault();
     try {
       const {ethereum} = window;
       if (ethereum) {        
+        const gameList = [];
+        let isEmpty = false;
+        let gameCounter = 0;
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
-        const gameTxn = await gameAddressContract.getGame(parseInt(gameId));
-        console.log("Home team for game Id", gameId, ": " ,gameTxn.homeTeam)
+        while (!isEmpty){
+          const gameTxn = await gameAddressContract.getGame(parseInt(gameCounter));
+          if (gameTxn.homeTeam != ""){
+            gameList.push(gameTxn);
+            gameCounter++;
+          } else {
+            isEmpty=true;
+          }
+        }
+        setGameList(gameList);
+        setShowGames(true);
       }
       else {
         console.log('ethereum object does not exist')
@@ -128,17 +142,20 @@ const App = () => {
             Away Score:
             <input type="number" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
           </label>
-          <input type="submit" value="Submit" />
+          <input type="submit" value="Submit a new game" />
         </form>
       )}
       {currentAccount && (
-       <form onSubmit = {getGame}>
-         <label>
-           Game ID
-           <input type="number" value = {gameId} onChange={(e) => setGameId(e.target.value)} />
-         </label>
-         <input type="submit" value="Get Game ID" />
+       <form onSubmit = {getGames}>
+         <input type="submit" value="Ask the blockchain for all the games" />
        </form>
+      )}
+      {showGames && (
+        <ol>
+          {gameList.map((game) => (
+            <li>{game.homeTeam} | {game.awayTeam}</li>
+          ))}
+        </ol>
       )}
     </div>
   )
