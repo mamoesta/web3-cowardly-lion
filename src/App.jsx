@@ -4,16 +4,30 @@ import "./App.css";
 import gmABI from "./utils/GameManager.json";
 import predABI from "./utils/PredictionManager.json";
 import { id } from "ethers/lib/utils";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link
+} from "react-router-dom";
 const App = () => {
+  //Game Settings
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
   const [homeScore, setHomeScore] = useState("");
   const [awayScore, setAwayScore] = useState("");
   const [gameId, setGameId] = useState("");
+  //Prediction settings
+  const [bidAddress, setBidAddress] = useState("");
+  const [challengerAddress, setChallengerAddress] = useState("");
+  const [bidAmount, setBidAmount] = useState("");
+  const [challengerAmount, setChallengerAmount] = useState("");
+  const [bidOdds, setBidOdds] = useState("");
+  const [predGameID, setPredGameID] = useState("");
   const [showGames, setShowGames] = useState(false);
   const [gameList, setGameList] = useState([]);
   const gameABI = gmABI.abi;
-  const gameAddress = "0xa0487053F053Cfa1f6C4025E6Ee71a2Fff08abb7";
+  const gameAddress = "0x4a1a9723680f1f9F4dc3E1e93b212d623885D0FA";
   const predictionABI = predABI.abi;
   const predictionAddress = "0x4F5455854B9BE10df17C70941D3C3Af4FD5aBD43";
   const [currentAccount, setCurrentAccount] = useState("");
@@ -58,11 +72,28 @@ const App = () => {
       console.log(error)
     }
   }
-  const handleSubmit = async (event) => {
+  const handleGameSubmit = async (event) => {
     event.preventDefault();
-    const game = {"homeTeam": homeTeam, "awayTeam":awayTeam,"homeScore": homeScore,"awayScore": awayScore, "isFinal":false,"isLocked": false, "startTime": Date.now()}
+    const game = {"id":0,"homeTeam": homeTeam, "awayTeam":awayTeam,"homeScore": homeScore,"awayScore": awayScore, "isFinal":false,"isLocked": false, "startTime": Date.now()}
     console.log("Here is the game: ", game)
     await addGame(game);
+  }
+  const handlePredSubmit = async (event) => {
+    event.preventDefault();
+    const pred = {"bidAddr": bidAddress, "challengerAddr":challengerAddress,"bidAmount": bidAmount,"challengerAmount": challengerAmount, "bidOdds":bidOdds,"bidGameWinner": 'Unknown', "gameID": predGameID, "bidWin": false, "hasChallenger": false, "isFinal": false}
+    console.log("Here is the prediction: ", pred)
+    await addPred(pred);
+  }
+  const addPred = async (pred) => {
+    try {
+      const {ethereum} = window;
+      if (ethereum){
+        //add the prediction for that user
+      }
+    }
+    catch(error){
+      console.log(error)
+    }
   }
   const addGame = async (game) => {
     try {
@@ -75,7 +106,9 @@ const App = () => {
         await gameTxn.wait();
         console.log("Mined -- ", gameTxn.hash);
      }
-     
+     else {
+       console.log('Ethereum object does not exist')
+     }
     }
     catch(error){
       console.log(error)
@@ -93,8 +126,8 @@ const App = () => {
         const signer = provider.getSigner();
         const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
         while (!isEmpty){
-          const gameTxn = await gameAddressContract.getGame(parseInt(gameCounter));
-          if (gameTxn.homeTeam != ""){
+          let gameTxn = await gameAddressContract.getGame(parseInt(gameCounter));
+          if (gameTxn.homeTeam !== ""){
             gameList.push(gameTxn);
             gameCounter++;
           } else {
@@ -112,52 +145,117 @@ const App = () => {
       console.log(error)
     }
   }
+  function About() {
+    return <h2>You're on the About Page</h2>;
+  }
+  function Home() {
+    return <h2>You're on the Home Page</h2>;
+  }
   useEffect(() => {
     checkIfWalletIsConnected();
   }, [])
   return(
+    //routing
+    <>
     <div>
-      <li>Game Contract Address:  {gameAddress}!</li>
-      <li>Prediction Contract Address: {predictionAddress}!</li>
+      some basic routing here
+    </div>
+    <Router>
+      <div>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/about">About</Link>
+            </li>
+            <li>
+              <Link to="/">Home </Link>
+            </li>
+          </ul>
+        </nav>
+        <Routes>
+          <Route path="/about" element={<About />} />
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </div>
+    </Router>
+
+    <div>
+      <h2>THE MEAT:</h2>
+      <li>Game Contract Address:  {gameAddress}</li>
+      <li>Prediction Contract Address: {predictionAddress}</li>
+      <br></br>
       {!currentAccount && (
           <button onClick={connectWallet}>
             Connect Wallet
           </button>
         )}
       {currentAccount && (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleGameSubmit}>
           <label>
             Home Team:
-            <input type="text" value={homeTeam} onChange={(e) => setHomeTeam(e.target.value)}/>
+            <input type="text" key="homeTeam" value={homeTeam} onChange={(e) => setHomeTeam(e.target.value)}/>
           </label>
           <label>
             Away Team:
-            <input type="text" value={awayTeam} onChange={(e) => setAwayTeam(e.target.value)}/>
+            <input type="text" key="awayTeam" value={awayTeam} onChange={(e) => setAwayTeam(e.target.value)}/>
           </label>
           <label>
             Home Score:
-            <input type="number" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
+            <input type="number" key="homeScore" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
           </label>
           <label>
             Away Score:
-            <input type="number" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
+            <input type="number" key="awayScore" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
           </label>
           <input type="submit" value="Submit a new game" />
         </form>
       )}
+      <br></br>
+      {currentAccount && (
+        <form onSubmit={handlePredSubmit}>
+          <label>
+            Bid Address:
+            <input type="text" value={bidAddress} onChange={(e) => setBidAddress(e.target.value)}/>
+          </label>
+          <label>
+            Challenger Address:
+            <input type="text" value={challengerAddress} onChange={(e) => setChallengerAddress(e.target.value)}/>
+          </label>
+          <label>
+            Bid Amount:
+            <input type="number" value={bidAmount} onChange={(e) => setBidAmount(e.target.value)}/>
+          </label>
+          <label>
+            Challenger Amount:
+            <input type="number" value={challengerAmount} onChange={(e) => setChallengerAmount(e.target.value)}/>
+          </label>
+          <label>
+            Bid Odds:
+            <input type="number" value={bidOdds} onChange={(e) => setBidOdds(e.target.value)}/>
+          </label>
+          <label>
+            Game ID:
+            <input type="number" value={predGameID} onChange={(e) => setPredGameID(e.target.value)}/>
+          </label>
+          <input type="submit" value="Submit a new prediction" />
+        </form>
+      )}
+      <br></br>
       {currentAccount && (
        <form onSubmit = {getGames}>
          <input type="submit" value="Ask the blockchain for all the games" />
        </form>
       )}
-      {showGames && (
-        <ol>
+      <h3>ID | Home Team | Away Team</h3>
+      {showGames && ( 
+        <ul>
           {gameList.map((game) => (
-            <li>{game.homeTeam} | {game.awayTeam}</li>
+            <li key={game.id}>{game.id.toString()} | {game.homeTeam} | {game.awayTeam}</li>
           ))}
-        </ol>
+        </ul>
       )}
     </div>
+    </>
   )
 }
 export default App;

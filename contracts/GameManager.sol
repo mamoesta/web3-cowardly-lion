@@ -8,6 +8,7 @@ contract GameManager {
   address public owner = msg.sender;
   
   struct Game {
+    uint id;
     string homeTeam;
     string awayTeam;
     uint homeScore;
@@ -18,6 +19,7 @@ contract GameManager {
   }
   mapping (uint => Game) public gameList;
   function createGame(Game memory gm) public returns (bool){
+    gm.id = gameID;
     gameList[gameID] = gm;
     gameID ++;
     return true;
