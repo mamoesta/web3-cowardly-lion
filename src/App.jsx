@@ -3,13 +3,13 @@ import {ethers} from "ethers";
 import "./App.css";
 import gmABI from "./utils/GameManager.json";
 import predABI from "./utils/PredictionManager.json";
-import { id } from "ethers/lib/utils";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Link
 } from "react-router-dom";
+const {BigNumber} = require("@ethersproject/bignumber");
 const App = () => {
   //Game Settings
   const [homeTeam, setHomeTeam] = useState("");
@@ -26,10 +26,12 @@ const App = () => {
   const [predGameID, setPredGameID] = useState("");
   const [showGames, setShowGames] = useState(false);
   const [gameList, setGameList] = useState([]);
+  const [showPreds, setShowPreds] = useState(false);
+  const [predList, setPredList] = useState([]);
   const gameABI = gmABI.abi;
   const gameAddress = "0x4a1a9723680f1f9F4dc3E1e93b212d623885D0FA";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0x4F5455854B9BE10df17C70941D3C3Af4FD5aBD43";
+  const predictionAddress = "0x2c07e97C64ed9B3bedbDf32453F988f22734C527";
   const [currentAccount, setCurrentAccount] = useState("");
   const checkIfWalletIsConnected = async () => {
     try {
@@ -88,7 +90,13 @@ const App = () => {
     try {
       const {ethereum} = window;
       if (ethereum){
-        //add the prediction for that user
+        pred.id = 0
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
+        const predTxn = await predAddressContract.receiveNewBid(pred);
+        await predTxn.wait();
+        console.log("Mined -- ", predTxn.hash);
       }
     }
     catch(error){
@@ -136,6 +144,40 @@ const App = () => {
         }
         setGameList(gameList);
         setShowGames(true);
+      }
+      else {
+        console.log('ethereum object does not exist')
+      }
+    }
+    catch(error){
+      console.log(error)
+    }
+  }
+  const getPreds = async (event) => {
+    event.preventDefault();
+    try {
+      const {ethereum} = window;
+      if (ethereum) {        
+        console.log('asking the blockchain for all predictions')
+        const predList = [];
+        let isEmpty = false;
+        let predCounter = 0;
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
+        while (!isEmpty){
+          let predTxn = await predAddressContract.getPred(parseInt(predCounter));
+          console.log(predTxn.bidAmount)
+          if (predTxn.bidAmount.toNumber() !== 0){
+            predList.push(predTxn);
+            predCounter++;
+          } else {
+            isEmpty=true;
+          }
+        }
+        console.log('im out of this hole')
+        setPredList(predList);
+        setShowPreds(true);
       }
       else {
         console.log('ethereum object does not exist')
@@ -251,6 +293,20 @@ const App = () => {
         <ul>
           {gameList.map((game) => (
             <li key={game.id}>{game.id.toString()} | {game.homeTeam} | {game.awayTeam}</li>
+          ))}
+        </ul>
+      )}
+      <br></br>
+      {currentAccount && (
+       <form onSubmit = {getPreds}>
+         <input type="submit" value="Ask the blockchain for all the predictions" />
+       </form>
+      )}
+      <h3>ID | Bid Addr | Challenger Addr | Game ID</h3>
+      {showPreds && ( 
+        <ul>
+          {predList.map((pred) => (
+            <li key={pred.id}>{pred.id.toString()} | {pred.bidAddr} | {pred.challengerAddr} | {pred.gameID.toString()}</li>
           ))}
         </ul>
       )}

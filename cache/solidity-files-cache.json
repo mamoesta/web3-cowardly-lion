@@ -36,43 +36,6 @@
         "GameManager"
       ]
     },
-    "/Users/martymoesta/Documents/git/web3-cowardly-lion/contracts/Greeter 2.sol": {
-      "lastModificationDate": 1645603324902,
-      "contentHash": "54c28c84e5277b35b8c8329ce9755dae",
-      "sourceName": "contracts/Greeter 2.sol",
-      "solcConfig": {
-        "version": "0.8.4",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "hardhat/console.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "Greeter"
-      ]
-    },
     "/Users/martymoesta/Documents/git/web3-cowardly-lion/node_modules/hardhat/console.sol": {
       "lastModificationDate": 1645591210445,
       "contentHash": "cc4777addd464ea56fa35b1c45df0591",
@@ -146,8 +109,8 @@
       ]
     },
     "/Users/martymoesta/Documents/git/web3-cowardly-lion/contracts/PredictionManager.sol": {
-      "lastModificationDate": 1645594413007,
-      "contentHash": "1430c09c894584f661cb24cbef80bf13",
+      "lastModificationDate": 1649222612261,
+      "contentHash": "880f5ac6cef29c4b543085fc49bf5843",
       "sourceName": "contracts/PredictionManager.sol",
       "solcConfig": {
         "version": "0.8.4",

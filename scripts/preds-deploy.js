@@ -19,7 +19,7 @@ async function main() {
 
   await preds.deployed();
 
-  console.log("Games deployed to:", preds.address);
+  console.log("Preds deployed to:", preds.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

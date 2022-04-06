@@ -9,6 +9,7 @@ contract PredictionManager {
   receive() external payable{}
   
   struct Prediction {
+    uint id;
     address payable bidAddr;
     address payable challengerAddr;
     uint bidAmount;
@@ -39,7 +40,9 @@ contract PredictionManager {
       pred.bidWin = false;
       pred.hasChallenger = false;
       pred.isFinal = false;
+      pred.id = predId;
       predictionList[predId] = pred;
+      addressBook[msg.sender] = predId;
       predId++;  
     }
     // this address is trying to add a new bid and the previous pred is finalized
@@ -47,7 +50,9 @@ contract PredictionManager {
       pred.bidWin = false;
       pred.hasChallenger = false;
       pred.isFinal = false;
+      pred.id = predId;
       predictionList[addressBook[msg.sender]] = pred;
+      predId++;
     }
     // this address is trying to add a new bid and the previous bid is not final
     else{
