@@ -31,7 +31,7 @@ contract PredictionManager {
     //check to determine if an address has an open bid
     return predictionList[addressBook[addr]].isFinal;
   }
-  function receiveNewBid(Prediction memory pred) public payable {
+  function receiveNewBid(Prediction memory pred) public payable returns(uint) {
     require(hasActiveBid(msg.sender) != true, 'This address already has an active bid.');
 
     //if this address has yet to ever file a bid
@@ -43,7 +43,8 @@ contract PredictionManager {
       pred.id = predId;
       predictionList[predId] = pred;
       addressBook[msg.sender] = predId;
-      predId++;  
+      predId++; 
+      return 69; 
     }
     // this address is trying to add a new bid and the previous pred is finalized
     else if (addressBook[msg.sender]!= 0 && predictionList[addressBook[msg.sender]].isFinal == true) {
@@ -53,10 +54,11 @@ contract PredictionManager {
       pred.id = predId;
       predictionList[addressBook[msg.sender]] = pred;
       predId++;
+      return 79;
     }
     // this address is trying to add a new bid and the previous bid is not final
     else{
-      //uncaught
+      return 89;//uncaught
     }
     
   }

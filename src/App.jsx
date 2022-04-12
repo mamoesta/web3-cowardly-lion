@@ -31,7 +31,7 @@ const App = () => {
   const gameABI = gmABI.abi;
   const gameAddress = "0x4a1a9723680f1f9F4dc3E1e93b212d623885D0FA";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0x2c07e97C64ed9B3bedbDf32453F988f22734C527";
+  const predictionAddress = "0xFE46b7479ec965A19969dbbC3967c4ddBE1B3f07";
   const [currentAccount, setCurrentAccount] = useState("");
   const checkIfWalletIsConnected = async () => {
     try {
@@ -82,9 +82,15 @@ const App = () => {
   }
   const handlePredSubmit = async (event) => {
     event.preventDefault();
-    const pred = {"bidAddr": bidAddress, "challengerAddr":challengerAddress,"bidAmount": bidAmount,"challengerAmount": challengerAmount, "bidOdds":bidOdds,"bidGameWinner": 'Unknown', "gameID": predGameID, "bidWin": false, "hasChallenger": false, "isFinal": false}
+    const pred = {"bidAddr": bidAddress, "challengerAddr":challengerAddress,"bidAmount": bidAmount,"challengerAmount": challengerAmount, "bidOdds":bidOdds,"bidGameWinner": "0xD7Fa4965eA43E0cB3bdB89A3Fb411d22e92d76DE", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true}
     console.log("Here is the prediction: ", pred)
     await addPred(pred);
+  }
+  const handleGameUpdate = async(event) => {
+    event.preventDefault();
+    const update = {"gameId": gameId,"homeScore": homeScore, "awayScore": awayScore}
+    console.log("Here is the game update: ",update )
+    await finalizeGame(update)
   }
   const addPred = async (pred) => {
     try {
@@ -113,6 +119,26 @@ const App = () => {
         const gameTxn = await gameAddressContract.createGame(game);
         await gameTxn.wait();
         console.log("Mined -- ", gameTxn.hash);
+     }
+     else {
+       console.log('Ethereum object does not exist')
+     }
+    }
+    catch(error){
+      console.log(error)
+    }
+  }
+  const returnResults = async (event) => {
+    event.preventDefault();
+    try {
+      const {ethereum } = window;
+      if (ethereum){
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const predictionContract = new ethers.Contract(predictionAddress, predictionABI, signer);
+        const ret = await predictionContract.returnResults();
+        await ret.wait();
+        console.log("Mined -- ", ret.hash);
      }
      else {
        console.log('Ethereum object does not exist')
@@ -187,6 +213,25 @@ const App = () => {
       console.log(error)
     }
   }
+  const finalizeGame = async (update) => {
+    try {
+      const {ethereum} = window;
+      if (ethereum) {        
+        console.log('finalizing game...')
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
+        let txn = await gameAddressContract.updateGameScore(update.gameId, update.homeScore, update.awayScore)
+        console.log(txn)
+        }
+      else {
+        console.log('ethereum object does not exist')
+      }
+    }
+    catch(error){
+      console.log(error)
+    }
+  }
   function About() {
     return <h2>You're on the About Page</h2>;
   }
@@ -199,9 +244,6 @@ const App = () => {
   return(
     //routing
     <>
-    <div>
-      some basic routing here
-    </div>
     <Router>
       <div>
         <nav>
@@ -288,11 +330,12 @@ const App = () => {
          <input type="submit" value="Ask the blockchain for all the games" />
        </form>
       )}
-      <h3>ID | Home Team | Away Team</h3>
+      <h3>ID | Home Team |Home Score | Away Team | Away Score | Is Final</h3>
       {showGames && ( 
         <ul>
           {gameList.map((game) => (
-            <li key={game.id}>{game.id.toString()} | {game.homeTeam} | {game.awayTeam}</li>
+            <li key={game.id}>{game.id.toString()} | {game.homeTeam} |{game.homeScore.toString()}| 
+           {game.awayTeam} | {game.awayScore.toString()} | {game.isFinal.toString()}</li>
           ))}
         </ul>
       )}
@@ -302,13 +345,35 @@ const App = () => {
          <input type="submit" value="Ask the blockchain for all the predictions" />
        </form>
       )}
-      <h3>ID | Bid Addr | Challenger Addr | Game ID</h3>
+      <h3>ID | Bid Addr | Challenger Addr | Game ID | Who Won? | BidWin | Has Challenger? | Is Final?</h3>
       {showPreds && ( 
         <ul>
           {predList.map((pred) => (
-            <li key={pred.id}>{pred.id.toString()} | {pred.bidAddr} | {pred.challengerAddr} | {pred.gameID.toString()}</li>
+            <li key={pred.id}>{pred.id.toString()} | {pred.bidAddr.substring(32,)} | {pred.challengerAddr.substring(32,)} | {pred.gameID.toString()} | {pred.bidGameWinner} | {pred.bidWin.toString()}| {pred.hasChallenger.toString()} | {pred.isFinal.toString()}</li>
           ))}
         </ul>
+      )}
+      {currentAccount && (
+       <form onSubmit = {handleGameUpdate}>
+         <label>
+            Game ID:
+            <input type="number" value={gameId} onChange={(e) => setGameId(e.target.value)}/>
+          </label>
+          <label>
+            Home Final:
+            <input type="number" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
+          </label>
+          <label>
+            Away Final:
+            <input type="number" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
+          </label>
+         <input type="submit" value="Finalize a Game" />
+       </form>
+      )}
+      {currentAccount && (
+       <form onSubmit = {returnResults}>
+         <input type="submit" value="Return results for current account" />
+       </form>
       )}
     </div>
     </>
