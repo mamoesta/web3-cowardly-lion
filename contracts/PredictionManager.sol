@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
+import "hardhat/console.sol";
+
 contract PredictionManager {
   address public owner = msg.sender;
   uint public predId = 0;
 
   fallback() external payable{}
   receive() external payable{}
+  address payable c_addr = payable(this);
   
   struct Prediction {
     uint id;
@@ -32,8 +35,8 @@ contract PredictionManager {
   }
   function receiveNewBid(Prediction memory pred) public payable  {
     require(hasActiveBid(msg.sender) != true, 'This address already has an active bid.');
-
     //if this address has yet to ever file a bid
+   
     if(addressBook[msg.sender] == 0){
       //add a new entry
       pred.bidWin = false;
@@ -42,7 +45,7 @@ contract PredictionManager {
       pred.id = predId;
       predictionList[predId] = pred;
       addressBook[msg.sender] = predId;
-      predId++; 
+      predId++;
 
     }
     // this address is trying to add a new bid and the previous prediction that they made is finalized
@@ -61,8 +64,8 @@ contract PredictionManager {
     }
     
   }
-  function returnResults() public returns (bool) {
-    address payable sourceAddr = payable(msg.sender);
+  function returnResults(address payable addr) public returns (bool) {
+    address payable sourceAddr = addr;
     Prediction memory pred = predictionList[addressBook[msg.sender]];
     require(pred.isFinal,'Cannot return payouts for a matched bid until the results are final.');
     
@@ -70,31 +73,34 @@ contract PredictionManager {
     predictionList[addressBook[msg.sender]].isFinal = false;
     
     if(!pred.hasChallenger && sourceAddr == pred.bidAddr){
+      console.log("No challenger!");
       uint amount = pred.bidAmount;
-      bool sent = pred.bidAddr.send(amount);
-      //(bool sent,) = pred.bidAddr.call{value: amount}("");
+      (bool sent,) = pred.bidAddr.call{value: amount}("");     
       require(sent, "Failed to send Ether");
       return true;
     }
     else if (pred.bidAddr == sourceAddr && pred.bidWin){
-      //uint amount = pred.bidAmount;
+      console.log("Bidder won!");
       uint winAmount = pred.bidAmount + pred.challengerAmount;
-      bool sent = pred.bidAddr.send(winAmount);
+      (bool sent,) = pred.bidAddr.call{value: winAmount}("");
       require(sent, "Failed to send Ether");
       return true;
     }
     else if (pred.challengerAddr == sourceAddr && !pred.bidWin) {
+      console.log("Challenger won!");
       uint winAmount = pred.bidAmount + pred.challengerAmount;
       (bool sent, ) = pred.bidAddr.call{value: winAmount}("");
       require(sent, "Failed to send Ether");
       return true;
     }
     else {
+      console.log("Uncaught!");
       return false;
       // return the money to everyone - perhaps in the case of a tie or some other uncaught result
     }
   }
   function updateBidWithChallenger (uint predIndex, address payable challengerAddr, uint amount) public payable {
+    console.log("Address sending in the challenge:", msg.sender);
     addressBook[challengerAddr] = predIndex;
     require(predictionList[predIndex].hasChallenger == false, 'This bid already has a challenger');
     require(predictionList[predIndex].bidAmount == amount, 'Challenge amount does not match bid amount.');
@@ -102,6 +108,7 @@ contract PredictionManager {
     predictionList[predIndex].challengerAddr = challengerAddr;
     predictionList[predIndex].challengerAmount = amount;
     predictionList[predIndex].hasChallenger = true;
+    
   }
   function getPred(uint index) public view returns (Prediction memory pred){
     return predictionList[index];
@@ -110,6 +117,7 @@ contract PredictionManager {
     return addressBook[addr];
   }
   function makeFinal(uint index) public {
+    
     predictionList[index].isFinal = true;
   }
   function bidWin(uint index) public {
