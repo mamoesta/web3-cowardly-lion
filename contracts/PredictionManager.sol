@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
-
 contract PredictionManager {
   address public owner = msg.sender;
   uint public predId = 0;
@@ -31,12 +30,12 @@ contract PredictionManager {
     //check to determine if an address has an open bid
     return predictionList[addressBook[addr]].isFinal;
   }
-  function receiveNewBid(Prediction memory pred) public payable returns(uint) {
+  function receiveNewBid(Prediction memory pred) public payable  {
     require(hasActiveBid(msg.sender) != true, 'This address already has an active bid.');
 
     //if this address has yet to ever file a bid
     if(addressBook[msg.sender] == 0){
-      // add a new entry
+      //add a new entry
       pred.bidWin = false;
       pred.hasChallenger = false;
       pred.isFinal = false;
@@ -44,9 +43,9 @@ contract PredictionManager {
       predictionList[predId] = pred;
       addressBook[msg.sender] = predId;
       predId++; 
-      return 69; 
+
     }
-    // this address is trying to add a new bid and the previous pred is finalized
+    // this address is trying to add a new bid and the previous prediction that they made is finalized
     else if (addressBook[msg.sender]!= 0 && predictionList[addressBook[msg.sender]].isFinal == true) {
       pred.bidWin = false;
       pred.hasChallenger = false;
@@ -54,11 +53,11 @@ contract PredictionManager {
       pred.id = predId;
       predictionList[addressBook[msg.sender]] = pred;
       predId++;
-      return 79;
+
     }
     // this address is trying to add a new bid and the previous bid is not final
     else{
-      return 89;//uncaught
+    //uncaught
     }
     
   }
@@ -72,13 +71,15 @@ contract PredictionManager {
     
     if(!pred.hasChallenger && sourceAddr == pred.bidAddr){
       uint amount = pred.bidAmount;
-      (bool sent,) = pred.bidAddr.call{value: amount}("");
+      bool sent = pred.bidAddr.send(amount);
+      //(bool sent,) = pred.bidAddr.call{value: amount}("");
       require(sent, "Failed to send Ether");
       return true;
     }
     else if (pred.bidAddr == sourceAddr && pred.bidWin){
+      //uint amount = pred.bidAmount;
       uint winAmount = pred.bidAmount + pred.challengerAmount;
-      (bool sent, ) = pred.bidAddr.call{value: winAmount}("");
+      bool sent = pred.bidAddr.send(winAmount);
       require(sent, "Failed to send Ether");
       return true;
     }
@@ -107,5 +108,11 @@ contract PredictionManager {
   }
   function getIndex(address addr) public view returns (uint index){
     return addressBook[addr];
+  }
+  function makeFinal(uint index) public {
+    predictionList[index].isFinal = true;
+  }
+  function bidWin(uint index) public {
+    predictionList[index].bidWin = true;
   }
 }
