@@ -12,6 +12,7 @@ module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
+      chainId: 1337
     },
     rinkeby: {
       url: process.env.STAGING_ALCHEMY_KEY,

@@ -6,9 +6,11 @@ contract PredictionManager {
   address public owner = msg.sender;
   uint public predId = 0;
 
+
   fallback() external payable{}
   receive() external payable{}
-  address payable c_addr = payable(this);
+  address payable pred_addr = payable(this);
+  address public game_addr;
   
   struct Prediction {
     uint id;
@@ -64,6 +66,7 @@ contract PredictionManager {
     }
     
   }
+
   function returnResults(address payable addr) public returns (bool) {
     address payable sourceAddr = addr;
     Prediction memory pred = predictionList[addressBook[msg.sender]];
@@ -113,6 +116,11 @@ contract PredictionManager {
   function getPred(uint index) public view returns (Prediction memory pred){
     return predictionList[index];
   }
+  function getGameContractAddress(address addr) public{
+    game_addr = addr;
+    console.log("Game address:", game_addr);
+  }
+  
   function getIndex(address addr) public view returns (uint index){
     return addressBook[addr];
   }

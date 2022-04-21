@@ -28,10 +28,13 @@ const App = () => {
   const [gameList, setGameList] = useState([]);
   const [showPreds, setShowPreds] = useState(false);
   const [predList, setPredList] = useState([]);
+  // challenge settings
+  const [predId, setPredId] = useState("");
+  const [betAmount, setBetAmount] = useState(0);
   const gameABI = gmABI.abi;
-  const gameAddress = "0x4a1a9723680f1f9F4dc3E1e93b212d623885D0FA";
+  const gameAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xFE46b7479ec965A19969dbbC3967c4ddBE1B3f07";
+  const predictionAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
   const [currentAccount, setCurrentAccount] = useState("");
   const checkIfWalletIsConnected = async () => {
     try {
@@ -86,6 +89,10 @@ const App = () => {
     console.log("Here is the prediction: ", pred)
     await addPred(pred);
   }
+  const handleChallengeSubmit = async (event) => {
+    event.preventDefault();
+    await addChallenge(predId, currentAccount, betAmount);
+  }
   const handleGameUpdate = async(event) => {
     event.preventDefault();
     const update = {"gameId": gameId,"homeScore": homeScore, "awayScore": awayScore}
@@ -103,6 +110,24 @@ const App = () => {
         const predTxn = await predAddressContract.receiveNewBid(pred);
         await predTxn.wait();
         console.log("Mined -- ", predTxn.hash);
+      }
+    }
+    catch(error){
+      console.log(error)    
+    }
+  }
+  const addChallenge = async(predId, addr, betAmount) => {
+    try {
+      const {ethereum} = window;
+      if (ethereum){
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
+        //const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
+        console.log(addr)
+        const challengeTxn = await predAddressContract.updateBidWithChallenger(String(predId), String(addr), betAmount);
+        await challengeTxn.wait();
+        console.log("Mined challenge --", challengeTxn.hash);
       }
     }
     catch(error){
@@ -201,7 +226,7 @@ const App = () => {
             isEmpty=true;
           }
         }
-        console.log('im out of this hole')
+
         setPredList(predList);
         setShowPreds(true);
       }
@@ -321,7 +346,21 @@ const App = () => {
             Game ID:
             <input type="number" value={predGameID} onChange={(e) => setPredGameID(e.target.value)}/>
           </label>
-          <input type="submit" value="Submit a new prediction" />
+          <input type="submit" value="Submit a new bid" />
+        </form>
+      )}
+          <br></br>
+      {currentAccount && (
+        <form onSubmit={handleChallengeSubmit}>
+          <label>
+            Prediction ID:
+            <input type="text" value={predId} onChange={(e) => setPredId(e.target.value)}/>
+          </label>
+          <label>
+            Bet Amount:
+            <input type="text" value={betAmount} onChange={(e) => setBetAmount(e.target.value)}/>
+          </label>
+          <input type="submit" value="Submit a new challenge" />
         </form>
       )}
       <br></br>
