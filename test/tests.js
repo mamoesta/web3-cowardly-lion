@@ -43,9 +43,12 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
   describe("\nPrediction Happy Path\n", function() {
     
     it("Create new bid, fill it with a challenger, finalize and pay out", async function (){
-      singlePred = {"id":0,"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount":bet_amount,"bidOdds": "50", "bidGameWinner": owner.address, "gameID": 1, "bidWin": true, "hasChallenger": true, "isFinal": true}
+      singlePred = {"id":0,"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount": bet_amount,"bidOdds": "50", "bidGameWinner": owner.address, "gameID": 0, "bidWin": true, "hasChallenger": true, "isFinal": true}
+
+      singleGame = {"id":0,"homeTeam":"Giants","awayTeam":"Tigers","homeScore":10, "awayScore":6,"isFinal":true,"isLocked":true, "startTime":30303030}
 
       await preds.getGameContractAddress(games.address);
+      await games.createGame(singleGame);
       const validGame = await games.getGame(singlePred.gameID)
       if (validGame.homeTeam){
         await preds.receiveNewBid(singlePred, {value: bet_amount})
@@ -56,8 +59,6 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
         
         const txn = await preds.returnResults(owner.address)
         await txn.wait();
-
-        const provider =  new ethers.getDefaultProvider(network = "http://127.0.0.1:8545/")
         contract_final_bal = await  provider.getBalance(preds.address)
         console.log("Contract final balance after bid and challenger: ", await  provider.getBalance(preds.address))
 

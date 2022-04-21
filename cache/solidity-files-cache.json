@@ -109,8 +109,8 @@
       ]
     },
     "/Users/martymoesta/Documents/git/web3-cowardly-lion/contracts/PredictionManager.sol": {
-      "lastModificationDate": 1650495915026,
-      "contentHash": "5e4035cde9fe71c8e543963c22351401",
+      "lastModificationDate": 1650583008383,
+      "contentHash": "e1124c3b0181ab537e750c657c71239f",
       "sourceName": "contracts/PredictionManager.sol",
       "solcConfig": {
         "version": "0.8.4",

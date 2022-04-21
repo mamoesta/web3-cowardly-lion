@@ -31,10 +31,11 @@ const App = () => {
   // challenge settings
   const [predId, setPredId] = useState("");
   const [betAmount, setBetAmount] = useState(0);
+  const [predIdFinal, setPredIdFinal] = useState(0);
   const gameABI = gmABI.abi;
   const gameAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+  const predictionAddress = "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318";
   const [currentAccount, setCurrentAccount] = useState("");
   const checkIfWalletIsConnected = async () => {
     try {
@@ -83,9 +84,29 @@ const App = () => {
     console.log("Here is the game: ", game)
     await addGame(game);
   }
+  const handlePredFinal = async (event) => {
+    event.preventDefault();
+    try {
+      const {ethereum} = window;
+      if (ethereum){
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
+        const predTxn = await predAddressContract.makeFinal(predIdFinal);
+        await predTxn.wait();
+        console.log("Mined -- ", predTxn.hash);
+      }
+    }
+    catch(error){
+      console.log(error)    
+    }
+    
+
+  }
   const handlePredSubmit = async (event) => {
     event.preventDefault();
-    const pred = {"bidAddr": bidAddress, "challengerAddr":challengerAddress,"bidAmount": bidAmount,"challengerAmount": challengerAmount, "bidOdds":bidOdds,"bidGameWinner": "0xD7Fa4965eA43E0cB3bdB89A3Fb411d22e92d76DE", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true}
+    console.log(ethers.utils.parseEther(bidAmount).toString())
+    const pred = {"bidAddr": bidAddress, "challengerAddr":challengerAddress,"bidAmount": bidAmount, "challengerAmount": challengerAddress, "bidOdds":bidOdds,"bidGameWinner": "0xD7Fa4965eA43E0cB3bdB89A3Fb411d22e92d76DE", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true}
     console.log("Here is the prediction: ", pred)
     await addPred(pred);
   }
@@ -107,7 +128,8 @@ const App = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
-        const predTxn = await predAddressContract.receiveNewBid(pred);
+        const options = {value: ethers.utils.parseEther(pred.bidAmount)};
+        const predTxn = await predAddressContract.receiveNewBid(pred, options);
         await predTxn.wait();
         console.log("Mined -- ", predTxn.hash);
       }
@@ -124,10 +146,12 @@ const App = () => {
         const signer = provider.getSigner();
         const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
         //const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
-        console.log(addr)
-        const challengeTxn = await predAddressContract.updateBidWithChallenger(String(predId), String(addr), betAmount);
+        console.log(betAmount)
+        const options = {value: ethers.utils.parseEther(betAmount)}
+        const challengeTxn = await predAddressContract.updateBidWithChallenger(String(predId), String(addr), betAmount,options);
         await challengeTxn.wait();
         console.log("Mined challenge --", challengeTxn.hash);
+        console.log(await provider.getBalance(predictionAddress))
       }
     }
     catch(error){
@@ -161,7 +185,7 @@ const App = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const predictionContract = new ethers.Contract(predictionAddress, predictionABI, signer);
-        const ret = await predictionContract.returnResults();
+        const ret = await predictionContract.returnResults(currentAccount);
         await ret.wait();
         console.log("Mined -- ", ret.hash);
      }
@@ -407,7 +431,17 @@ const App = () => {
             <input type="number" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
           </label>
          <input type="submit" value="Finalize a Game" />
+         
        </form>
+      )}
+      {currentAccount && (
+        <form onSubmit = {handlePredFinal}>
+          <label>
+            Pred Id to Finalize:
+            <input type="number" value={predIdFinal} onChange={(e) => setPredIdFinal(e.target.value)}/>
+          </label>
+          <input type="submit" value="Finalize a Prediction"/>
+        </form>
       )}
       {currentAccount && (
        <form onSubmit = {returnResults}>

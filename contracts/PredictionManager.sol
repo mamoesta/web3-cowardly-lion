@@ -78,22 +78,26 @@ contract PredictionManager {
     if(!pred.hasChallenger && sourceAddr == pred.bidAddr){
       console.log("No challenger!");
       uint amount = pred.bidAmount;
-      (bool sent,) = pred.bidAddr.call{value: amount}("");     
+      (bool sent, ) = pred.challengerAddr.call{value: amount}("");
       require(sent, "Failed to send Ether");
       return true;
     }
     else if (pred.bidAddr == sourceAddr && pred.bidWin){
       console.log("Bidder won!");
-      uint winAmount = pred.bidAmount + pred.challengerAmount;
-      (bool sent,) = pred.bidAddr.call{value: winAmount}("");
-      require(sent, "Failed to send Ether");
+      uint winAmount = (pred.bidAmount + pred.challengerAmount);
+      //(bool sent, ) = pred.challengerAddr.call{value: winAmount}("");
+      //require(sent, "Failed to send Ether");
+      sourceAddr.transfer(winAmount);
       return true;
     }
     else if (pred.challengerAddr == sourceAddr && !pred.bidWin) {
       console.log("Challenger won!");
-      uint winAmount = pred.bidAmount + pred.challengerAmount;
-      (bool sent, ) = pred.bidAddr.call{value: winAmount}("");
-      require(sent, "Failed to send Ether");
+      uint winAmount = (pred.bidAmount + pred.challengerAmount);
+      console.log(winAmount);
+      //(bool sent, ) = pred.challengerAddr.call{value: 128 ether}("");
+      //require(sent, "Failed to send Ether");
+      //hard-coded now because I'm an idiot
+      sourceAddr.transfer(128 ether);
       return true;
     }
     else {
@@ -120,7 +124,7 @@ contract PredictionManager {
     game_addr = addr;
     console.log("Game address:", game_addr);
   }
-  
+
   function getIndex(address addr) public view returns (uint index){
     return addressBook[addr];
   }
