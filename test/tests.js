@@ -53,7 +53,8 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
       if (validGame.homeTeam){
         await preds.receiveNewBid(singlePred, {value: bet_amount})
       
-        foo = await preds.connect(addr1).updateBidWithChallenger(0, addr1.address, {value: ethers.utils.parseEther('1.0833')}) 
+        foo = await preds.connect(addr1).updateBidWithChallenger(0, addr1.address, {value: ethers.utils.parseEther('1.0833')})
+        cval = await preds.getMultiplier(0);
         await preds.bidWin(0)
         await preds.makeFinal(0)
         

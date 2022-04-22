@@ -35,7 +35,7 @@ const App = () => {
   const gameABI = gmABI.abi;
   const gameAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
+  const predictionAddress = "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82";
   const [currentAccount, setCurrentAccount] = useState("");
   const checkIfWalletIsConnected = async () => {
     try {
@@ -112,7 +112,7 @@ const App = () => {
   }
   const handleChallengeSubmit = async (event) => {
     event.preventDefault();
-    await addChallenge(predId, currentAccount, betAmount);
+    await addChallenge(predId, currentAccount);
   }
   const handleGameUpdate = async(event) => {
     event.preventDefault();
@@ -139,7 +139,7 @@ const App = () => {
       console.log(error)    
     }
   }
-  const addChallenge = async(predId, addr, betAmount) => {
+  const addChallenge = async(predId, addr) => {
     try {
       const {ethereum} = window;
       if (ethereum){
@@ -148,8 +148,8 @@ const App = () => {
         const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
         //const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
         console.log(betAmount)
-        const options = {value: ethers.utils.parseEther(betAmount)}
-        const challengeTxn = await predAddressContract.updateBidWithChallenger(String(predId), String(addr), String(ethers.utils.parseEther(betAmount).toBigInt()),options);
+        const options = {value: await predAddressContract.getMultiplier(predId)};
+        const challengeTxn = await predAddressContract.updateBidWithChallenger(String(predId), String(addr),options);
         await challengeTxn.wait();
         console.log("Mined challenge --", challengeTxn.hash);
         console.log(await provider.getBalance(predictionAddress))
@@ -415,10 +415,6 @@ const App = () => {
           <label>
             Prediction ID:
             <input type="text" value={predId} onChange={(e) => setPredId(e.target.value)}/>
-          </label>
-          <label>
-            Bet Amount:
-            <input type="text" value={betAmount} onChange={(e) => setBetAmount(e.target.value)}/>
           </label>
           <input type="submit" value="Submit a new challenge" />
         </form>
