@@ -93,11 +93,11 @@ contract PredictionManager {
     else if (pred.challengerAddr == sourceAddr && !pred.bidWin) {
       console.log("Challenger won!");
       uint winAmount = (pred.bidAmount + pred.challengerAmount);
-      console.log(winAmount);
+      //console.log(winAmount);
       //(bool sent, ) = pred.challengerAddr.call{value: 128 ether}("");
       //require(sent, "Failed to send Ether");
       //hard-coded now because I'm an idiot
-      sourceAddr.transfer(128 ether);
+      sourceAddr.transfer(winAmount);
       return true;
     }
     else {
