@@ -109,8 +109,14 @@ contract PredictionManager {
   function updateBidWithChallenger (uint predIndex, address payable challengerAddr, uint amount) public payable {
     console.log("Address sending in the challenge:", msg.sender);
     addressBook[challengerAddr] = predIndex;
-    require(predictionList[predIndex].hasChallenger == false, 'This bid already has a challenger');
-    require(predictionList[predIndex].bidAmount == amount, 'Challenge amount does not match bid amount.');
+    Prediction memory halfBakedPred =  predictionList[predIndex];
+    require(halfBakedPred.hasChallenger == false, 'This bid already has a challenger');
+    uint multiplier = ((100 - halfBakedPred.bidOdds) * 100) / (halfBakedPred.bidOdds * 100);
+    console.log("here is the multiplier:" , multiplier);
+    uint amountMultiplied = ((halfBakedPred.bidAmount * multiplier));
+    console.log(amount);
+    console.log(amountMultiplied);
+    require(amountMultiplied == amount, 'Challenge amount does not match bid amount.');
     
     predictionList[predIndex].challengerAddr = challengerAddr;
     predictionList[predIndex].challengerAmount = amount;

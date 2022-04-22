@@ -1,3 +1,6 @@
+.exit
+provider
+ const provider =  new ethers.getDefaultProvider(network = "http://127.0.0.1:8545/")
 foo = await provider.getBalance("0x172076E0166D1F9Cc711C77Adf8488051744980C")
 foo
 foo = await provider.getBalance(0x172076E0166D1F9Cc711C77Adf8488051744980C)
