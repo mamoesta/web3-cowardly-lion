@@ -33,9 +33,9 @@ const App = () => {
   const [betAmount, setBetAmount] = useState(0);
   const [predIdFinal, setPredIdFinal] = useState(0);
   const gameABI = gmABI.abi;
-  const gameAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const gameAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+  const predictionAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
   const [currentAccount, setCurrentAccount] = useState("");
   const checkIfWalletIsConnected = async () => {
     try {
@@ -313,7 +313,7 @@ const App = () => {
     </Router>
 
     <div>
-      <h2>Welcome to the Cowardly Lion!</h2>
+      <h2>Welcome to the Cowardly Lion Susie!</h2>
       <br></br>
       {!currentAccount && (
           <button onClick={connectWallet}>

@@ -43,7 +43,7 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
   describe("\nPrediction Happy Path\n", function() {
     
     it("Create new bid, fill it with a challenger, finalize and pay out", async function (){
-      singlePred = {"id":0,"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount": bet_amount,"bidOdds":"33", "bidGameWinner": owner.address, "gameID": 0, "bidWin": true, "hasChallenger": true, "isFinal": true}
+      singlePred = {"id":0,"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount": bet_amount,"bidOdds": "48", "bidGameWinner": owner.address, "gameID": 0, "bidWin": true, "hasChallenger": true, "isFinal": true}
 
       singleGame = {"id":0,"homeTeam":"Giants","awayTeam":"Tigers","homeScore":10, "awayScore":6,"isFinal":true,"isLocked":true, "startTime":30303030}
 
@@ -53,7 +53,7 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
       if (validGame.homeTeam){
         await preds.receiveNewBid(singlePred, {value: bet_amount})
       
-        foo = await preds.connect(addr1).updateBidWithChallenger(0, addr1.address, ethers.utils.parseEther('2'), {value: ethers.utils.parseEther('2')}) 
+        foo = await preds.connect(addr1).updateBidWithChallenger(0, addr1.address, {value: ethers.utils.parseEther('1.0833')}) 
         await preds.bidWin(0)
         await preds.makeFinal(0)
         

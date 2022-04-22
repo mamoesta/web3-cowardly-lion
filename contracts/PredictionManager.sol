@@ -106,22 +106,31 @@ contract PredictionManager {
       // return the money to everyone - perhaps in the case of a tie or some other uncaught result
     }
   }
-  function updateBidWithChallenger (uint predIndex, address payable challengerAddr, uint amount) public payable {
+  function updateBidWithChallenger (uint predIndex, address payable challengerAddr) public payable {
     console.log("Address sending in the challenge:", msg.sender);
     addressBook[challengerAddr] = predIndex;
     Prediction memory halfBakedPred =  predictionList[predIndex];
+    //uint amount = halfBakedPred.bidAmount;
     require(halfBakedPred.hasChallenger == false, 'This bid already has a challenger');
-    uint multiplier = ((100 - halfBakedPred.bidOdds) * 100) / (halfBakedPred.bidOdds * 100);
-    console.log("here is the multiplier:" , multiplier);
-    uint amountMultiplied = ((halfBakedPred.bidAmount * multiplier));
-    console.log(amount);
-    console.log(amountMultiplied);
-    require(amountMultiplied == amount, 'Challenge amount does not match bid amount.');
+    //uint multiplier = ((100 - halfBakedPred.bidOdds) * 10000) / halfBakedPred.bidOdds;
+    //uint multiplier = ((100 - halfBakedPred.bidOdds) * 100) / (halfBakedPred.bidOdds * 100);
+    //console.log("here is the multiplier:" , multiplier);
     
+    uint amountMultiplied = getMultiplier(predIndex);
     predictionList[predIndex].challengerAddr = challengerAddr;
-    predictionList[predIndex].challengerAmount = amount;
+    predictionList[predIndex].challengerAmount = amountMultiplied;
     predictionList[predIndex].hasChallenger = true;
-    
+    console.log("Bid amount:", predictionList[predIndex].bidAmount);
+    console.log("Bid/challenger ratio:", (predictionList[predIndex].bidOdds * 100)/(100-predictionList[predIndex].bidOdds));
+    console.log("Challenger amount:",predictionList[predIndex].challengerAmount);  
+  }
+  function getMultiplier(uint predIndex) public view returns (uint response){
+    Prediction memory halfBakedPred = predictionList[predIndex];
+    uint multiplier = ((100 - halfBakedPred.bidOdds) * 10000) / halfBakedPred.bidOdds;
+    //uint multiplier = ((100 - halfBakedPred.bidOdds) * 100) / (halfBakedPred.bidOdds * 100)
+    uint amountMultiplied = ((halfBakedPred.bidAmount * multiplier))/10000;
+    //require(amountMultiplied == amount, 'Challenge amount does not match bid amount.');
+    return amountMultiplied;
   }
   function getPred(uint index) public view returns (Prediction memory pred){
     return predictionList[index];
