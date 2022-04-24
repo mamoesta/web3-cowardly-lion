@@ -7,7 +7,7 @@
 
 # testing
 /coverage
-/cache
+/cache/console-history.txt
 
 # production
 /build
