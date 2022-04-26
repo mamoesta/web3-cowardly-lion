@@ -65,8 +65,10 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
 
         console.log("Bidder address after prediction win: ", await owner.getBalance())
         console.log("Challenger address after prediction loss: ", await addr1.getBalance())
+        //console.log("Prediction object (hopefully wiped): ", await preds.getPred(0))
 
-        expect(contract_final_bal).to.equal(0)
+        flushedPred = await preds.getPred(0)
+        expect(String(flushedPred.bidAmount)).to.equal('0');
       }
       else {
         console.log("Invalid game! But the test still passed!")

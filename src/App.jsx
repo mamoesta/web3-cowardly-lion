@@ -35,7 +35,7 @@ const App = () => {
   const gameABI = gmABI.abi;
   const gameAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82";
+  const predictionAddress = "0xDC11f7E700A4c898AE5CAddB1082cFfa76512aDD";
   const [currentAccount, setCurrentAccount] = useState("");
   const checkIfWalletIsConnected = async () => {
     try {
@@ -106,7 +106,7 @@ const App = () => {
   const handlePredSubmit = async (event) => {
     event.preventDefault();
     console.log(ethers.utils.parseEther(bidAmount).toString())
-    const pred = {"bidAddr": bidAddress, "challengerAddr":challengerAddress,"bidAmount": bidAmount, "challengerAmount": challengerAddress, "bidOdds":bidOdds,"bidGameWinner": "0xD7Fa4965eA43E0cB3bdB89A3Fb411d22e92d76DE", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true}
+    const pred = {"bidAddr": currentAccount, "challengerAddr":"0x0000000000000000000000000000000000000000","bidAmount": bidAmount, "challengerAmount": 0, "bidOdds":bidOdds,"bidGameWinner": "0x00", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true}
     console.log("Here is the prediction: ", pred)
     await addPred(pred);
   }
@@ -313,7 +313,7 @@ const App = () => {
     </Router>
 
     <div>
-      <h2>Welcome to the Cowardly Lion Susie!</h2>
+      <h2>Welcome to the Cowardly Lion!</h2>
       <br></br>
       {!currentAccount && (
           <button onClick={connectWallet}>
@@ -383,20 +383,8 @@ const App = () => {
         <form onSubmit={handlePredSubmit}>
           <h2>Prediction Admin</h2>
           <label>
-            Bid Address:
-            <input type="text" value={bidAddress} onChange={(e) => setBidAddress(e.target.value)}/>
-          </label>
-          <label>
-            Challenger Address:
-            <input type="text" value={challengerAddress} onChange={(e) => setChallengerAddress(e.target.value)}/>
-          </label>
-          <label>
             Bid Amount:
             <input type="number" value={bidAmount} onChange={(e) => setBidAmount(e.target.value)}/>
-          </label>
-          <label>
-            Challenger Amount:
-            <input type="number" value={challengerAmount} onChange={(e) => setChallengerAmount(e.target.value)}/>
           </label>
           <label>
             Bid Odds:
