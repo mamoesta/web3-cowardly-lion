@@ -9,7 +9,6 @@ import {
   Route,
   Link
 } from "react-router-dom";
-const {BigNumber} = require("@ethersproject/bignumber");
 const App = () => {
   //Game Settings
   const [homeTeam, setHomeTeam] = useState("");
@@ -18,10 +17,8 @@ const App = () => {
   const [awayScore, setAwayScore] = useState("");
   const [gameId, setGameId] = useState("");
   //Prediction settings
-  const [bidAddress, setBidAddress] = useState("");
-  const [challengerAddress, setChallengerAddress] = useState("");
+
   const [bidAmount, setBidAmount] = useState("");
-  const [challengerAmount, setChallengerAmount] = useState("");
   const [bidOdds, setBidOdds] = useState("");
   const [predGameID, setPredGameID] = useState("");
   const [showGames, setShowGames] = useState(false);
@@ -30,7 +27,6 @@ const App = () => {
   const [predList, setPredList] = useState([]);
   // challenge settings
   const [predId, setPredId] = useState("");
-  const [betAmount, setBetAmount] = useState(0);
   const [predIdFinal, setPredIdFinal] = useState(0);
   const gameABI = gmABI.abi;
   const gameAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
@@ -147,7 +143,6 @@ const App = () => {
         const signer = provider.getSigner();
         const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
         //const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
-        console.log(betAmount)
         const options = {value: await predAddressContract.getMultiplier(predId)};
         const challengeTxn = await predAddressContract.updateBidWithChallenger(String(predId), String(addr),options);
         await challengeTxn.wait();
