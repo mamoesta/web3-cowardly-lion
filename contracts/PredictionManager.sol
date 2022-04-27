@@ -43,6 +43,7 @@ contract PredictionManager {
       //add a new entry
       pred.bidWin = false;
       pred.hasChallenger = false;
+      pred.challengerAmount = 0;
       pred.isFinal = false;
       pred.id = predId;
       predictionList[predId] = pred;
@@ -132,8 +133,8 @@ contract PredictionManager {
     predictionList[predIndex].challengerAmount = amountMultiplied;
     predictionList[predIndex].hasChallenger = true;
     console.log("Bid amount:", predictionList[predIndex].bidAmount);
-    console.log("Bid/challenger ratio:", (predictionList[predIndex].bidOdds * 100)/(100-predictionList[predIndex].bidOdds));
     console.log("Challenger amount:",predictionList[predIndex].challengerAmount);  
+    console.log("Bid/challenger ratio:", (predictionList[predIndex].bidOdds * 100)/(100-predictionList[predIndex].bidOdds));
   }
   function getMultiplier(uint predIndex) public view returns (uint response){
     Prediction memory halfBakedPred = predictionList[predIndex];

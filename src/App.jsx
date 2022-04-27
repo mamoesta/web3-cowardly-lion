@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, createContext } from "react";
 import {ethers} from "ethers";
 import "./App.css";
 import gmABI from "./utils/GameManager.json";
 import predABI from "./utils/PredictionManager.json";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link
-} from "react-router-dom";
+import Container from 'react-bootstrap/Container';
+import Table from 'react-bootstrap/Table';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+
+
+
 const App = () => {
   //Game Settings
   const [homeTeam, setHomeTeam] = useState("");
@@ -29,10 +31,15 @@ const App = () => {
   const [predId, setPredId] = useState("");
   const [predIdFinal, setPredIdFinal] = useState(0);
   const gameABI = gmABI.abi;
-  const gameAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
+  const gameAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xDC11f7E700A4c898AE5CAddB1082cFfa76512aDD";
+  const predictionAddress = "0x0165878A594ca255338adfa4d48449f69242Eb8F";
   const [currentAccount, setCurrentAccount] = useState("");
+
+  const isBackgroundDark = true;
+
+
+
   const checkIfWalletIsConnected = async () => {
     try {
       const { ethereum } = window;
@@ -276,166 +283,181 @@ const App = () => {
       console.log(error)
     }
   }
-  function About() {
-    return <h4>You're on the About Page</h4>;
-  }
-  function Home() {
-    return <h4>You're on the Home Page</h4>;
-  }
   useEffect(() => {
     checkIfWalletIsConnected();
   }, [])
   return(
-    //routing
-    <>
-    <Router>
-      <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/about">About</Link>
-            </li>
-            <li>
-              <Link to="/">Home </Link>
-            </li>
-          </ul>
-        </nav>
-        <Routes>
-          <Route path="/about" element={<About />} />
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </div>
-    </Router>
-
-    <div>
-      <h2>Welcome to the Cowardly Lion!</h2>
-      <br></br>
-      {!currentAccount && (
-          <button onClick={connectWallet}>
-            Connect Wallet
-          </button>
+    <body className={isBackgroundDark ? 'background-grey' : 'background-white'}  >
+      <header className="App-header">
+        <h1 variant="dark">Welcome to the Cowardly Lion! </h1>
+      </header>
+        {!currentAccount && (
+            <button onClick={connectWallet}>
+              Connect Wallet
+            </button>
+          )}
+        {currentAccount && (
+          <form onSubmit={handleGameSubmit}>
+            <h2>Game Admin</h2>
+            <label>
+              Home Team:
+              <input type="text" key="homeTeam" value={homeTeam} onChange={(e) => setHomeTeam(e.target.value)}/>
+            </label>
+            <label>
+              Away Team:
+              <input type="text" key="awayTeam" value={awayTeam} onChange={(e) => setAwayTeam(e.target.value)}/>
+            </label>
+            <label>
+              Home Score:
+              <input type="number" key="homeScore" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
+            </label>
+            <label>
+              Away Score:
+              <input type="number" key="awayScore" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
+            </label>
+            <input type="submit" value="Submit a new game" />
+          </form>
         )}
-      {currentAccount && (
-        
-        <form onSubmit={handleGameSubmit}>
-          <h2>Game Admin</h2>
+        <br></br>
+        {currentAccount && (
+        <form onSubmit = {handleGameUpdate}>
           <label>
-            Home Team:
-            <input type="text" key="homeTeam" value={homeTeam} onChange={(e) => setHomeTeam(e.target.value)}/>
-          </label>
-          <label>
-            Away Team:
-            <input type="text" key="awayTeam" value={awayTeam} onChange={(e) => setAwayTeam(e.target.value)}/>
-          </label>
-          <label>
-            Home Score:
-            <input type="number" key="homeScore" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
-          </label>
-          <label>
-            Away Score:
-            <input type="number" key="awayScore" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
-          </label>
-          <input type="submit" value="Submit a new game" />
+              Game ID:
+              <input type="number" value={gameId} onChange={(e) => setGameId(e.target.value)}/>
+            </label>
+            <label>
+              Home Final:
+              <input type="number" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
+            </label>
+            <label>
+              Away Final:
+              <input type="number" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
+            </label>
+          <input type="submit" value="Finalize a Game" />  
         </form>
-      )}
-      <br></br>
-      {currentAccount && (
-       <form onSubmit = {handleGameUpdate}>
-         <label>
-            Game ID:
-            <input type="number" value={gameId} onChange={(e) => setGameId(e.target.value)}/>
-          </label>
-          <label>
-            Home Final:
-            <input type="number" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
-          </label>
-          <label>
-            Away Final:
-            <input type="number" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
-          </label>
-         <input type="submit" value="Finalize a Game" />  
-       </form>
-      )}
-      <br></br>
-      {currentAccount && (
-       <form onSubmit = {getGames}>
-         <input type="submit" value="Ask the blockchain for all the games" />
-       </form>
-      )}
-      <br></br>
-      <br></br>
-      {currentAccount && showGames &&  (<h3>ID | Home Team |Home Score | Away Team | Away Score | Is Final</h3>)}
-      {( 
-        <ul>
-          {gameList.map((game) => (
-            <li key={game.id}>{game.id.toString()} | {game.homeTeam} |{game.homeScore.toString()}| 
-           {game.awayTeam} | {game.awayScore.toString()} | {game.isFinal.toString()}</li>
-          ))}
-        </ul>
-      )}
-      <br></br>
-      {currentAccount && (
-        <form onSubmit={handlePredSubmit}>
-          <h2>Prediction Admin</h2>
-          <label>
-            Bid Amount:
-            <input type="number" value={bidAmount} onChange={(e) => setBidAmount(e.target.value)}/>
-          </label>
-          <label>
-            Bid Odds:
-            <input type="number" value={bidOdds} onChange={(e) => setBidOdds(e.target.value)}/>
-          </label>
-          <label>
-            Game ID:
-            <input type="number" value={predGameID} onChange={(e) => setPredGameID(e.target.value)}/>
-          </label>
-          <input type="submit" value="Submit a new bid" />
+        )}
+        <br></br>
+        {currentAccount && (
+        <form onSubmit = {getGames}>
+          <input type="submit" value="Ask the blockchain for all the games" />
         </form>
-      )}
-          <br></br>
-      {currentAccount && (
-        <form onSubmit={handleChallengeSubmit}>
-          <label>
-            Prediction ID:
-            <input type="text" value={predId} onChange={(e) => setPredId(e.target.value)}/>
-          </label>
-          <input type="submit" value="Submit a new challenge" />
+        )}
+        <br></br>
+        <br></br>
+        {currentAccount && showGames &&  ( 
+          <Table striped bordered hover variant="dark">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Home Team</th>
+                <th>Away Team</th>
+                <th>Home Score</th>
+                <th>Away Score</th>
+                <th>Is The Game Final?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {gameList.map((game) =>(
+                <tr>
+                  <th>{game.id.toString()}</th>
+                  <th>{game.homeTeam.toString()}</th>
+                  <th>{game.awayTeam.toString()}</th>
+                  <th>{game.homeScore.toString()}</th>
+                  <th>{game.awayScore.toString()}</th>
+                  <th>{game.isFinal.toString()}</th>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+        <br></br>
+        {currentAccount && (
+          <form onSubmit={handlePredSubmit}>
+            <h2>Prediction Admin</h2>
+            <label>
+              Bid Amount:
+              <input type="number" value={bidAmount} onChange={(e) => setBidAmount(e.target.value)}/>
+            </label>
+            <label>
+              Bid Odds:
+              <input type="number" value={bidOdds} onChange={(e) => setBidOdds(e.target.value)}/>
+            </label>
+            <label>
+              Game ID:
+              <input type="number" value={predGameID} onChange={(e) => setPredGameID(e.target.value)}/>
+            </label>
+            <input type="submit" value="Submit a new bid" />
+          </form>
+        )}
+            <br></br>
+        {currentAccount && (
+          <form onSubmit={handleChallengeSubmit}>
+            <label>
+              Prediction ID:
+              <input type="text" value={predId} onChange={(e) => setPredId(e.target.value)}/>
+            </label>
+            <input type="submit" value="Submit a new challenge" />
+          </form>
+        )}
+        <br></br>
+        {currentAccount && (
+          <form onSubmit = {handlePredFinal}>
+            <label>
+              Pred Id to Finalize:
+              <input type="number" value={predIdFinal} onChange={(e) => setPredIdFinal(e.target.value)}/>
+            </label>
+            <input type="submit" value="Finalize a Prediction"/>
+          </form>
+        )}
+        <br></br>
+        {currentAccount && (
+        <form onSubmit = {getPreds}>
+          <input type="submit" value="Ask the blockchain for all the predictions" />
         </form>
-      )}
-      <br></br>
-      {currentAccount && (
-        <form onSubmit = {handlePredFinal}>
-          <label>
-            Pred Id to Finalize:
-            <input type="number" value={predIdFinal} onChange={(e) => setPredIdFinal(e.target.value)}/>
-          </label>
-          <input type="submit" value="Finalize a Prediction"/>
+        )}
+        <br></br>
+        {showPreds && (
+          <Table striped bordered hover variant="dark">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Bid Address</th>
+              <th>Challenger Address</th>
+              <th>Game ID</th>
+              <th>Bid Amount</th>
+              <th>Challenger Amount</th>
+              <th>Did Bidder Win?</th>
+              <th>Is the Bid Final?</th>
+            </tr>
+          </thead>
+          <tbody>
+            {predList.map((pred) =>(
+              <tr>
+                <th>{pred.id.toString()}</th>
+                <th>{pred.bidAddr.toString()}</th>
+                <th>{pred.challengerAddr.toString()}</th>
+                <th>{pred.gameID.toString()}</th>
+                <th>{String(ethers.utils.formatEther(pred.bidAmount.toBigInt()))}</th>
+                <th>{String(ethers.utils.formatEther(pred.challengerAmount.toBigInt()))}</th>
+                <th>{pred.bidWin.toString()}</th>
+                <th>{pred.isFinal.toString()}</th>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+        )}
+        <br></br>
+        {currentAccount && (
+        <form onSubmit = {returnResults}>
+          <h2> Request a Payout </h2>
+          <input type="submit" value="Return results for current account" />
         </form>
-      )}
+        )}
       <br></br>
-      {currentAccount && (
-       <form onSubmit = {getPreds}>
-         <input type="submit" value="Ask the blockchain for all the predictions" />
-       </form>
-      )}
-      <br></br>
-      {showPreds && (<h3>Prediction ID | Bid Addr | Challenger Addr | Game ID | Bid Amount | BidWin | Has Challenger? | Is Final?</h3>)}
-      {showPreds && ( 
-        <ul>
-          {predList.map((pred) => (
-            <li key={pred.id}>{pred.id.toString()} | {pred.bidAddr.substring(32,)} | {pred.challengerAddr.substring(32,)} | {pred.gameID.toString()} | {String(ethers.utils.formatEther(pred.bidAmount.toBigInt()))} | {pred.bidWin.toString()}| {pred.hasChallenger.toString()} | {pred.isFinal.toString()}</li>
-          ))}
-        </ul>
-      )}
-      <br></br>
-      {currentAccount && (
-       <form onSubmit = {returnResults}>
-         <h2> Request a Payout </h2>
-         <input type="submit" value="Return results for current account" />
-       </form>
-      )}
-    </div>
-    </>
+    </body>
   )
 }
+
 export default App;
+
+

@@ -1,3 +1,16 @@
 .header {
   text-align: center;
 }
+.white-content {
+  background: #e4e4e4;
+}
+.background-white {
+  background-color: white;
+}
+
+.background-grey {
+  background-color: darkslategray;
+  height: 100vh;
+  width: 100%;
+  color: lightblue;
+}
