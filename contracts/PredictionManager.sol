@@ -132,6 +132,8 @@ contract PredictionManager {
     predictionList[predIndex].challengerAddr = challengerAddr;
     predictionList[predIndex].challengerAmount = amountMultiplied;
     predictionList[predIndex].hasChallenger = true;
+    predictionList[predIndex].isFinal = true;
+    
     console.log("Bid amount:", predictionList[predIndex].bidAmount);
     console.log("Challenger amount:",predictionList[predIndex].challengerAmount);  
     console.log("Bid/challenger ratio:", (predictionList[predIndex].bidOdds * 100)/(100-predictionList[predIndex].bidOdds));
