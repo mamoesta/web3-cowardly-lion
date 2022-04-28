@@ -9,6 +9,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Form from 'react-bootstrap/Form'
 import { FormGroup } from "react-bootstrap";
 import Button from 'react-bootstrap/Button';
+import Image from 'react-bootstrap/Image'
 
 
 
@@ -279,6 +280,7 @@ const App = () => {
       <Container>
       <header className="App-header">
         <h1 variant="dark">Welcome to the Cowardly Lion! </h1>
+        <Image height="200" src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Cowardly_Lion.png"/>
       </header>
       <br></br>
         {!currentAccount && (
