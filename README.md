@@ -1,5 +1,5 @@
 ## Cowardly Lion
-This application is a decentralized prediction marketplace for two team games. Demo [here](https://www.loom.com/share/4f7a449058fa4eb1bf6a93728675c803)
+A decentralized marketplace designed so well people barely recognize they are using crypto. Check out the demo [here](https://www.loom.com/share/3893aa74332f4b789743b16bfdc20554)
 
 ## Developing the application
 You can serve the application by running 
