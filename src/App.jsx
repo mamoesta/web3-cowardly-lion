@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext, Component } from "react";
+import React, { useEffect, useState} from "react";
 import {ethers} from "ethers";
 import "./App.css";
 import gmABI from "./utils/GameManager.json";
@@ -7,7 +7,7 @@ import Container from 'react-bootstrap/Container';
 import Table from 'react-bootstrap/Table';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Form from 'react-bootstrap/Form'
-import { FormGroup } from "react-bootstrap";
+import {DropdownButton, Dropdown, FormGroup } from "react-bootstrap";
 import Button from 'react-bootstrap/Button';
 import Image from 'react-bootstrap/Image'
 
@@ -21,7 +21,7 @@ const App = () => {
   const [awayScore, setAwayScore] = useState("");
   const [gameId, setGameId] = useState("");
   //Prediction settings
-
+  const [bidTeam, setBidTeam] = useState("Home Team")
   const [bidAmount, setBidAmount] = useState("");
   const [bidOdds, setBidOdds] = useState("");
   const [predGameID, setPredGameID] = useState("");
@@ -31,11 +31,11 @@ const App = () => {
   const [predList, setPredList] = useState([]);
   // challenge settings
   const [predId, setPredId] = useState("");
-  const [predIdFinal, setPredIdFinal] = useState(0);
+
   const gameABI = gmABI.abi;
-  const gameAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
+  const gameAddress = "0x59b670e9fA9D0A427751Af201D676719a970857b";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
+  const predictionAddress = "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d";
   const [currentAccount, setCurrentAccount] = useState("");
 
   const isBackgroundDark = true;
@@ -371,12 +371,18 @@ const App = () => {
             <Form onSubmit={handlePredSubmit}>
               <h1> Submit a Bid </h1>
               <FormGroup variant="dark" controlId="formBid">
+              <Form.Label>Game ID:</Form.Label>
+                <Form.Control placeholder="Which Game would you like to bid on?" value={predGameID} onChange={(e) => setPredGameID(e.target.value)}/>
+                <Form.Label>Pick your winner!</Form.Label>
+                <DropdownButton id="dropdown-basic-button" variant="dark" title={bidTeam} >
+                  <Dropdown.Item href="#/action-1" onClick={(e => setBidTeam("Home Team"))} value="Home Team"> Home Team</Dropdown.Item>
+                  <Dropdown.Item href="#/action-2" onClick={(e => setBidTeam("Away Team"))}>Away Team</Dropdown.Item>
+                </DropdownButton>
                 <Form.Label>Bid Amount</Form.Label>
                 <Form.Control placeholder="Enter a bid amount (in ETH)" value={bidAmount} onChange={(e) => setBidAmount(e.target.value)} />
                 <Form.Label>Bid Odds</Form.Label>
                 <Form.Control placeholder="What % chance do you think your team has to win? (out of 100)" value={bidOdds} onChange={(e) => setBidOdds(e.target.value)} />
-                <Form.Label>Game ID:</Form.Label>
-                <Form.Control placeholder="Which Game would you like to bid on?" value={predGameID} onChange={(e) => setPredGameID(e.target.value)}/>
+
               </FormGroup>
               <Button variant="outline-success" type="submit">
                 Submit Bid 
@@ -418,6 +424,7 @@ const App = () => {
               <th>Bid Address</th>
               <th>Challenger Address</th>
               <th>Game ID</th>
+              <th>Bidder's Predicted Winner</th>
               <th>Bid Amount</th>
               <th>Challenger Amount</th>
               <th>Bidder Odds</th>
@@ -431,6 +438,7 @@ const App = () => {
                 <th>{pred.bidAddr.toString().substring(32)}</th>
                 <th>{pred.challengerAddr.toString().substring(32)}</th>
                 <th>{pred.gameID.toString()}</th>
+                <th> Home Team</th>
                 <th>{String(ethers.utils.formatEther(pred.bidAmount.toBigInt()))}</th>
                 <th>{String(ethers.utils.formatEther(pred.challengerAmount.toBigInt()))}</th>
                 <th>{pred.bidOdds.toString()} %</th>
