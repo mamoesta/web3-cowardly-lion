@@ -1,5 +1,5 @@
 ## Cowardly Lion
-A decentralized marketplace designed so well people barely recognize they are using crypto. Check out the demo [here](https://www.loom.com/share/3893aa74332f4b789743b16bfdc20554)
+A decentralized prediction marketplace designed so well people barely recognize they are using crypto. Check out the demo [here](https://www.loom.com/share/3893aa74332f4b789743b16bfdc20554)
 
 ## Developing the application
 You can serve the application by running 
