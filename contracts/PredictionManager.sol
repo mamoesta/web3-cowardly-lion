@@ -19,7 +19,7 @@ contract PredictionManager {
     uint bidAmount;
     uint challengerAmount;
     uint bidOdds;
-    string bidGameWinner;
+    string gameWinner;
     uint gameID;
     bool bidWin;
     bool hasChallenger;
@@ -103,7 +103,7 @@ contract PredictionManager {
     // '0x3' --> 'baz', 0
     return true;
   }
-  function returnResults(address payable sourceAddr, uint pointer) public returns (bool) {
+  function returnResults(address payable sourceAddr, uint pointer) public returns (bool success) {
     
     Prediction memory pred = predictions[predList[pointer]];
     
@@ -113,7 +113,7 @@ contract PredictionManager {
     if(!pred.hasChallenger && sourceAddr == pred.bidAddr){
       console.log("No challenger!");
       uint amount = pred.bidAmount;
-      (bool sent, ) = pred.challengerAddr.call{value: amount}("");
+      (bool sent, ) = pred.bidAddr.call{value: amount}("");
       require(sent, "Failed to send Ether");
       deleteBid(pred.bidAddr);
       return true;
@@ -144,7 +144,6 @@ contract PredictionManager {
       return false;
       // return the money to everyone - perhaps in the case of a tie or some other uncaught result
     }
-
   }
   
   function receiveNewBid(Prediction memory pred) public payable  {
@@ -180,6 +179,14 @@ contract PredictionManager {
     }
     
   }
+  function makeFinal(address entityAddress) public {
+    
+    predictions[entityAddress].isFinal = true;
+  }
+  function bidWin(address entityAddress) public {
+    predictions[entityAddress].bidWin = true;
+  }
+  // Gets dicey from here on out
   function clearPrediction(address bidder, address challenger) public {
   
   delete predictionList[addressBook[bidder]];
@@ -262,12 +269,6 @@ contract PredictionManager {
   function getIndex(address addr) public view returns (uint index){
     return addressBook[addr];
   }
-  function makeFinal(uint index) public {
-    
-    predictionList[index].isFinal = true;
-  }
-  function bidWin(uint index) public {
-    predictionList[index].bidWin = true;
-  }
+
 
 }
