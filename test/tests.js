@@ -33,8 +33,6 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
       preds = await pred.deploy();
       games = await game.deploy();
       
-
-      
       console.log("Owner start balance: ", await owner.getBalance())
       console.log("Prediction contract start balance: ", await provider.getBalance(preds.address))
       

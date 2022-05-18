@@ -33,7 +33,7 @@ const App = () => {
   const [predId, setPredId] = useState("");
 
   const gameABI = gmABI.abi;
-  const gameAddress = "0x59b670e9fA9D0A427751Af201D676719a970857b";
+  const gameAddress = "0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc";
   const predictionABI = predABI.abi;
   const predictionAddress = "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d";
   const [currentAccount, setCurrentAccount] = useState("");
