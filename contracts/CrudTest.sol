@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 contract mappedWithUnorderedIndexAndDelete {
 
+  /*
   struct EntityStruct {
     uint entityData;
     uint listPointer;
@@ -66,4 +67,5 @@ contract mappedWithUnorderedIndexAndDelete {
     // '0x3' --> 'baz', 0
     return true;
   }
+  */
 }

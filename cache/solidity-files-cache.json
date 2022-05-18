@@ -2,7 +2,7 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/martymoesta/Documents/git/web3-cowardly-lion/contracts/GameManager.sol": {
-      "lastModificationDate": 1649120815555,
+      "lastModificationDate": 1652831455379,
       "contentHash": "6155ca86727b7d9207f1bd16456822d7",
       "sourceName": "contracts/GameManager.sol",
       "solcConfig": {
@@ -109,8 +109,8 @@
       ]
     },
     "/Users/martymoesta/Documents/git/web3-cowardly-lion/contracts/PredictionManager.sol": {
-      "lastModificationDate": 1651106793872,
-      "contentHash": "ea19133f22e67a79ef40b10b32b06f81",
+      "lastModificationDate": 1652835446665,
+      "contentHash": "ea523ebb505332a2116b5f27ef869356",
       "sourceName": "contracts/PredictionManager.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -143,6 +143,41 @@
       ],
       "artifacts": [
         "PredictionManager"
+      ]
+    },
+    "/Users/martymoesta/Documents/git/web3-cowardly-lion/contracts/CrudTest.sol": {
+      "lastModificationDate": 1652829013439,
+      "contentHash": "4a1f87ced9bcf3817dd91281a4fe38ed",
+      "sourceName": "contracts/CrudTest.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "mappedWithUnorderedIndexAndDelete"
       ]
     }
   }

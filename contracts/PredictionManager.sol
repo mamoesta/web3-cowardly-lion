@@ -12,8 +12,11 @@ contract PredictionManager {
   address payable pred_addr = payable(this);
   address public game_addr;
   
+  //an address can only have one active prediction bid at a time
+  mapping (address => Prediction) public predictions;
+  address [] public predList;
+  
   struct Prediction {
-    uint id;
     address payable bidAddr;
     address payable challengerAddr;
     uint bidAmount;
@@ -28,33 +31,38 @@ contract PredictionManager {
     uint listPointer;
   }
   
-  //a user can only have one active prediction at a time
-  mapping (address => Prediction) public predictions;
-  address [] public predList;
-  
-  function hasBid (address entityAddress) public returns (bool isIndeed){
+  function hasBid (address entityAddress) public view returns (bool){
     if(predList.length == 0) return false;
     return (predList[predictions[entityAddress].listPointer] == entityAddress);
   }
-  function getPredCount() public  returns(uint predsCount) {
+  function getPredCount() public view returns(uint predsCount) {
     return predList.length;
   }
   
-  function newBid(address entityAddress, Prediction memory pred) public payable returns(bool success) {
-    if(hasBid(entityAddress)) revert();
+  function foo(address entityAddress) public returns (bool){
+       
+       predList.push(entityAddress);
+  }
+  function newBid(Prediction memory pred) public payable returns(bool success) {
     
-    //TODO: Copy new entities
-    predictions[entityAddress].pred = pred;
+    require(!hasBid(msg.sender), "This address already has a bid");
     
-    predList.push(entityAddress);
-    predictions[entityAddress].listPointer =  predList.length- 1;
+    predList.push(msg.sender);
+    pred.bidAddr = payable(msg.sender);
+    pred.hasChallenger = false;
+    pred.isFinal = false;
+    pred.bidOdds = pred.bidOdds;
+    pred.bidWin = false;
+    pred.listPointer =  (predList.length) - 1;
+    predictions[msg.sender] = pred;
+   
     return true;
   }
 
-  function updateBidWithChallenger(address bidAddress, address challengerAddr) public payable {
+  function updateBidWithChallenger(address bidAddress, address payable challengerAddr) public payable {
     console.log("Address sending in the challenge:", msg.sender);
     predictions[bidAddress].challengerAddr = challengerAddr;
-    Prediction memory temp =  predictions[bidAddress];
+    //Prediction memory temp =  predictions[bidAddress];
     require(predictions[bidAddress].hasChallenger == false, 'This bid already has a challenger');
     
     uint amountMultiplied = getMultiplier(bidAddress);
@@ -89,9 +97,9 @@ contract PredictionManager {
     // 0
     uint rowToDelete = predictions[entityAddress].listPointer;
     // 0x3
-    address keyToMove   = predictions[predList.length-1];
+    address keyToMove   = predList[predList.length-1];
     // entityLIst = [0x3,0x2,0x3]
-    predictions[rowToDelete] = keyToMove;
+    predList[rowToDelete] = keyToMove;
     //2 -->  0
     predictions[keyToMove].listPointer = rowToDelete;
     // entityList = [0x3,0x2]
@@ -124,6 +132,7 @@ contract PredictionManager {
       //(bool sent, ) = pred.challengerAddr.call{value: winAmount}("");
       //require(sent, "Failed to send Ether");
       sourceAddr.transfer(winAmount);
+      console.log("Deleting the bid");
       deleteBid(pred.bidAddr);
       return true;
     }
@@ -145,7 +154,18 @@ contract PredictionManager {
       // return the money to everyone - perhaps in the case of a tie or some other uncaught result
     }
   }
-  
+  function makeFinal(address entityAddress) public {
+    
+    predictions[entityAddress].isFinal = true;
+  }
+  function bidWin(address entityAddress) public {
+    predictions[entityAddress].bidWin = true;
+  }
+  function getGameContractAddress(address addr) public{
+    game_addr = addr;
+    console.log("Game address:", game_addr);
+  }
+  /*
   function receiveNewBid(Prediction memory pred) public payable  {
     //require(hasActiveBid(msg.sender) != true, 'This address already has an active bid.');
     //if this address has yet to ever file a bid
@@ -179,13 +199,7 @@ contract PredictionManager {
     }
     
   }
-  function makeFinal(address entityAddress) public {
-    
-    predictions[entityAddress].isFinal = true;
-  }
-  function bidWin(address entityAddress) public {
-    predictions[entityAddress].bidWin = true;
-  }
+
   // Gets dicey from here on out
   function clearPrediction(address bidder, address challenger) public {
   
@@ -261,14 +275,10 @@ contract PredictionManager {
   function getPred(uint index) public view returns (Prediction memory pred){
     return predictionList[index];
   }
-  function getGameContractAddress(address addr) public{
-    game_addr = addr;
-    console.log("Game address:", game_addr);
-  }
+
 
   function getIndex(address addr) public view returns (uint index){
     return addressBook[addr];
   }
-
-
+  */
 }
