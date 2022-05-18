@@ -279,12 +279,19 @@ const App = () => {
     <body className={isBackgroundDark ? 'background-grey' : 'background-white'}>
       <Container>
       <header className="App-header">
-        <h1 variant="dark">Welcome to the Cowardly Lion! </h1>
+        <h1 variant="dark" style={{ textAlign: "center"}}>
+          Welcome to the Cowardly Lion! 
+        </h1>
         <Image height="200" src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Cowardly_Lion.png"/>
       </header>
       <br></br>
+        
         {!currentAccount && (
-            <Button variant="outline-primary" onClick={connectWallet}>
+            <Button 
+            variant="outline-primary" 
+            onClick={connectWallet}
+            style={{ color: "white", background: "#4b787d", border: "#4b787d", hover: "#263d40" }}
+            >
               Connect Wallet
             </Button>
           )}
