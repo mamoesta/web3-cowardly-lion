@@ -10,6 +10,7 @@ import Form from 'react-bootstrap/Form'
 import {DropdownButton, Dropdown, FormGroup } from "react-bootstrap";
 import Button from 'react-bootstrap/Button';
 import Image from 'react-bootstrap/Image'
+import { isAddress } from "ethers/lib/utils";
 
 
 
@@ -35,7 +36,7 @@ const App = () => {
   const gameABI = gmABI.abi;
   const gameAddress = "0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d";
+  const predictionAddress = "0x04C89607413713Ec9775E14b954286519d836FEf";
   const [currentAccount, setCurrentAccount] = useState("");
 
   const isBackgroundDark = true;
@@ -231,17 +232,22 @@ const App = () => {
         const signer = provider.getSigner();
         const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
         while (!isEmpty){
-          let predTxn = await predAddressContract.getPred(parseInt(predCounter));
-          if (predTxn.bidAmount > 0 ){
+          try{ 
+            let predID = await predAddressContract.predList(parseInt(predCounter));
+            //console.log(predID);
+            let predTxn = await predAddressContract.predictions(predID);
             predList.push(predTxn);
             predCounter++;
-          } else {
+          }
+          catch(error){
+            //console.log(error);
             isEmpty=true;
           }
         }
         if(predList.length < 1){
           console.log("There are no predictions right now!")
         }
+        console.log(predList);
         setPredList(predList);
         setShowPreds(true);
       }
@@ -434,7 +440,6 @@ const App = () => {
           <tbody>
             {predList.map((pred) =>(
               <tr key = {pred.id}>
-                <th>{pred.id.toString()}</th>
                 <th>{pred.bidAddr.toString().substring(32)}</th>
                 <th>{pred.challengerAddr.toString().substring(32)}</th>
                 <th>{pred.gameID.toString()}</th>
