@@ -12,29 +12,161 @@ contract PredictionManager {
   address payable pred_addr = payable(this);
   address public game_addr;
   
+  //an address can only have one active prediction bid at a time
+  mapping (address => Prediction) public predictions;
+  address [] public predList;
+  
   struct Prediction {
-    uint id;
     address payable bidAddr;
     address payable challengerAddr;
     uint bidAmount;
     uint challengerAmount;
     uint bidOdds;
-    string bidGameWinner;
+    string gameWinner;
     uint gameID;
     bool bidWin;
     bool hasChallenger;
     //bid is marked final once it's paid out.
     bool isFinal;
+    uint listPointer;
   }
   
-  //a user can only have one active prediction at a time
-  mapping (address => uint) public addressBook;
-  mapping (uint => Prediction) public predictionList;
+  function hasBid (address entityAddress) public view returns (bool){
+    if(predList.length == 0) return false;
+    return (predList[predictions[entityAddress].listPointer] == entityAddress);
+  }
+  function getPredCount() public view returns(uint predsCount) {
+    return predList.length;
+  }
   
-  //function hasActiveBid(address addr) public view returns(bool){
-    //check to determine if an address has an open bid
-    //return predictionList[addressBook[addr]].isFinal;
-  //}
+  function foo(address entityAddress) public returns (bool success){
+       
+       predList.push(entityAddress);
+       return success;
+  }
+  function newBid(Prediction memory pred) public payable returns(bool success) {
+    
+    require(!hasBid(msg.sender), "This address already has a bid");
+    
+    predList.push(msg.sender);
+    pred.bidAddr = payable(msg.sender);
+    pred.hasChallenger = false;
+    pred.isFinal = false;
+    pred.bidOdds = pred.bidOdds;
+    pred.bidWin = false;
+    pred.listPointer =  (predList.length) - 1;
+    predictions[msg.sender] = pred;
+   
+    return true;
+  }
+
+  function updateBidWithChallenger(address bidAddress, address payable challengerAddr) public payable {
+    console.log("Address sending in the challenge:", msg.sender);
+    predictions[bidAddress].challengerAddr = challengerAddr;
+    //Prediction memory temp =  predictions[bidAddress];
+    require(predictions[bidAddress].hasChallenger == false, 'This bid already has a challenger');
+    
+    uint amountMultiplied = getMultiplier(bidAddress);
+    predictions[bidAddress].challengerAddr = challengerAddr;
+    predictions[bidAddress].challengerAmount = amountMultiplied;
+    predictions[bidAddress].hasChallenger = true;
+    predictions[bidAddress].isFinal = true;
+    
+    console.log("Bid amount:", predictions[bidAddress].bidAmount);
+    console.log("Challenger amount:",predictions[bidAddress].challengerAmount);  
+    console.log("Bid/challenger ratio:", (predictions[bidAddress].bidOdds * 100)/(100-predictions[bidAddress].bidOdds));
+  }
+  function getMultiplier(address entityAddress) public view returns (uint response){
+    Prediction memory halfBakedPred = predictions[entityAddress];
+    uint multiplier = ((100 - halfBakedPred.bidOdds) * 10000) / halfBakedPred.bidOdds;
+    //uint multiplier = ((100 - halfBakedPred.bidOdds) * 100) / (halfBakedPred.bidOdds * 100)
+    uint amountMultiplied = ((halfBakedPred.bidAmount * multiplier))/10000;
+    //require(amountMultiplied == amount, 'Challenge amount does not match bid amount.');
+    return amountMultiplied;
+  }
+  
+  function deleteBid (address entityAddress) public returns(bool success) {   
+    //TODO: Be sure that this only needs to get called when the bidder is replacing this bid with a new one
+    if(!hasBid(entityAddress)) revert();
+    // EnttityStructs
+    // '0x1' --> 'foo', 0
+    // '0x2' --> 'bar', 1
+    // '0x3' --> 'baz', 2
+   
+    // entityList
+    //[0x1,0x2,0x3]
+    // 0
+    uint rowToDelete = predictions[entityAddress].listPointer;
+    // 0x3
+    address keyToMove   = predList[predList.length-1];
+    // entityLIst = [0x3,0x2,0x3]
+    predList[rowToDelete] = keyToMove;
+    //2 -->  0
+    predictions[keyToMove].listPointer = rowToDelete;
+    // entityList = [0x3,0x2]
+    predList.pop();
+    
+    //entityStructs
+    // '0x1' --> 'foo', 0
+    // '0x2' --> 'bar', 1
+    // '0x3' --> 'baz', 0
+    return true;
+  }
+  function returnResults(address payable sourceAddr) public returns (bool success) {
+    
+    Prediction memory pred = predictions[sourceAddr];
+    
+    //TODO: This should check if the game is final
+    require(pred.isFinal,'Cannot return payouts for a matched bid until the game is final.');
+    
+    if(!pred.hasChallenger && sourceAddr == pred.bidAddr){
+      console.log("No challenger!");
+      uint amount = pred.bidAmount;
+      (bool sent, ) = pred.bidAddr.call{value: amount}("");
+      require(sent, "Failed to send Ether");
+      deleteBid(pred.bidAddr);
+      return true;
+    }
+    else if (pred.bidAddr == sourceAddr && pred.bidWin){
+      console.log("Bidder won!");
+      uint winAmount = (pred.bidAmount + pred.challengerAmount);
+      //(bool sent, ) = pred.challengerAddr.call{value: winAmount}("");
+      //require(sent, "Failed to send Ether");
+      sourceAddr.transfer(winAmount);
+      console.log("Deleting the bid");
+      deleteBid(pred.bidAddr);
+      return true;
+    }
+    else if (pred.challengerAddr == sourceAddr && !pred.bidWin) {
+      console.log("Challenger won!");
+      uint winAmount = (pred.bidAmount + pred.challengerAmount);
+      //console.log(winAmount);
+      //(bool sent, ) = pred.challengerAddr.call{value: 128 ether}("");
+      //require(sent, "Failed to send Ether");
+      //hard-coded now because I'm an idiot
+      sourceAddr.transfer(winAmount);
+      deleteBid(pred.bidAddr);
+      return true;
+    }
+    else {
+      console.log("Uncaught!");
+      deleteBid(pred.bidAddr);
+      return false;
+      // return the money to everyone - perhaps in the case of a tie or some other uncaught result
+    }
+  }
+  function makeFinal(address entityAddress) public {
+    
+    predictions[entityAddress].isFinal = true;
+  }
+  function bidWin(address entityAddress) public {
+    predictions[entityAddress].bidWin = true;
+  }
+  function getGameContractAddress(address addr) public{
+    game_addr = addr;
+    console.log("Game address:", game_addr);
+  }
+  /*
   function receiveNewBid(Prediction memory pred) public payable  {
     //require(hasActiveBid(msg.sender) != true, 'This address already has an active bid.');
     //if this address has yet to ever file a bid
@@ -68,6 +200,8 @@ contract PredictionManager {
     }
     
   }
+
+  // Gets dicey from here on out
   function clearPrediction(address bidder, address challenger) public {
   
   delete predictionList[addressBook[bidder]];
@@ -138,31 +272,14 @@ contract PredictionManager {
     console.log("Challenger amount:",predictionList[predIndex].challengerAmount);  
     console.log("Bid/challenger ratio:", (predictionList[predIndex].bidOdds * 100)/(100-predictionList[predIndex].bidOdds));
   }
-  function getMultiplier(uint predIndex) public view returns (uint response){
-    Prediction memory halfBakedPred = predictionList[predIndex];
-    uint multiplier = ((100 - halfBakedPred.bidOdds) * 10000) / halfBakedPred.bidOdds;
-    //uint multiplier = ((100 - halfBakedPred.bidOdds) * 100) / (halfBakedPred.bidOdds * 100)
-    uint amountMultiplied = ((halfBakedPred.bidAmount * multiplier))/10000;
-    //require(amountMultiplied == amount, 'Challenge amount does not match bid amount.');
-    return amountMultiplied;
-  }
+
   function getPred(uint index) public view returns (Prediction memory pred){
     return predictionList[index];
   }
-  function getGameContractAddress(address addr) public{
-    game_addr = addr;
-    console.log("Game address:", game_addr);
-  }
+
 
   function getIndex(address addr) public view returns (uint index){
     return addressBook[addr];
   }
-  function makeFinal(uint index) public {
-    
-    predictionList[index].isFinal = true;
-  }
-  function bidWin(uint index) public {
-    predictionList[index].bidWin = true;
-  }
-
+  */
 }

@@ -6,6 +6,8 @@ const { ethers } = require("hardhat");
 describe("\nGetting started with Prediction and Game contracts\n", function (){
   let pred;
   let preds;
+  let game;
+  let games;
   let owner;
   let addr1;
   const bet_amount = ethers.utils.parseEther('100').toBigInt();
@@ -31,11 +33,9 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
       preds = await pred.deploy();
       games = await game.deploy();
       
-
-      
       console.log("Owner start balance: ", await owner.getBalance())
       console.log("Prediction contract start balance: ", await provider.getBalance(preds.address))
-      console.log("Games contract address: ", await games.address)
+      
       expect(await preds.owner()).to.equal(owner.address).to.equal(await games.owner());
 
     });
@@ -43,33 +43,28 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
   describe("\nPrediction Happy Path\n", function() {
     
     it("Create new bid, fill it with a challenger, finalize and pay out", async function (){
-      singlePred = {"id":0,"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount": bet_amount,"bidOdds": "10", "bidGameWinner": owner.address, "gameID": 0, "bidWin": true, "hasChallenger": true, "isFinal": true}
+      singlePred = {"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount": bet_amount,"bidOdds": 50, "gameWinner": owner.address, "gameID": 0, "bidWin": false, "hasChallenger": true, "isFinal": true, "listPointer":0}
 
       singleGame = {"id":0,"homeTeam":"Giants","awayTeam":"Tigers","homeScore":10, "awayScore":6,"isFinal":true,"isLocked":true, "startTime":30303030}
 
       await preds.getGameContractAddress(games.address);
       await games.createGame(singleGame);
       const validGame = await games.getGame(singlePred.gameID)
-      if (validGame.homeTeam){
-        await preds.receiveNewBid(singlePred, {value: bet_amount})
-      
-        cval = await preds.getMultiplier(0);
-        foo = await preds.connect(addr1).updateBidWithChallenger(0, addr1.address, {value: cval})
+      if (validGame.homeTeam == "Giants"){
         
-        await preds.bidWin(0)
-        await preds.makeFinal(0)
+        await preds.newBid(singlePred, {value: bet_amount})
+        cval = await preds.getMultiplier(owner.address);
+        challenge = await preds.connect(addr1).updateBidWithChallenger(owner.address, addr1.address, {value: cval})
         
-        const txn = await preds.returnResults(owner.address)
-        await txn.wait();
-        contract_final_bal = await  provider.getBalance(preds.address)
-        console.log("Contract final balance after bid and challenger: ", await  provider.getBalance(preds.address))
+        //await preds.bidWin(owner.address)
+        //console.log("Prediction with challenger: ", await preds.predictions(owner.address))
 
-        console.log("Bidder address after prediction win: ", await owner.getBalance())
-        console.log("Challenger address after prediction loss: ", await addr1.getBalance())
-        //console.log("Prediction object (hopefully wiped): ", await preds.getPred(0))
-
-        flushedPred = await preds.getPred(0)
-        expect(String(flushedPred.bidAmount)).to.equal('0');
+        //console.log("Does owner address have a bid?: ", await preds.hasBid(owner.address))
+        await preds.returnResults(owner.address, 0)
+        //console.log("Does owner address have a bid?: ", await preds.hasBid(owner.address))
+        console.log("Bidder end balance: ", await owner.getBalance())
+        console.log("Challenger end balance: ", await addr1.getBalance())
+        expect(false).to.equal(await preds.hasBid(owner.address));
       }
       else {
         console.log("Invalid game! But the test still passed!")

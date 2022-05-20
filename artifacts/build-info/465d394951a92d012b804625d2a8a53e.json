@@ -1,0 +1,110 @@
+{
+  "id": "465d394951a92d012b804625d2a8a53e",
+  "_format": "hh-sol-build-info-1",
+  "solcVersion": "0.8.4",
+  "solcLongVersion": "0.8.4+commit.c7e474f2",
+  "input": {
+    "language": "Solidity",
+    "sources": {
+      "contracts/CrudTest.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\ncontract mappedWithUnorderedIndexAndDelete {\n\n  /*\n  struct EntityStruct {\n    uint entityData;\n    uint listPointer;\n  }\n\n  mapping(address => EntityStruct) public entityStructs;\n  address[] public entityList;\n\n  function isEntity(address entityAddress) public  returns(bool isIndeed) {\n    if(entityList.length == 0) return false;\n    return zx\n  }\n\n  function getEntityCount() public  returns(uint entityCount) {\n    return entityList.length;\n  }\n\n  function newEntity(address entityAddress, uint entityData) public returns(bool success) {\n    if(isEntity(entityAddress)) revert();\n    entityStructs[entityAddress].entityData = entityData;\n    entityList.push(entityAddress);\n    entityStructs[entityAddress].listPointer =  entityList.length- 1;\n    return true;\n  }\n\n  function updateEntity(address entityAddress, uint entityData) public returns(bool success) {\n    if(!isEntity(entityAddress)) revert();\n    entityStructs[entityAddress].entityData = entityData;\n    return true;\n  }\n\n  function deleteEntity(address entityAddress) public returns(bool success) {\n    if(!isEntity(entityAddress)) revert();\n    \n    // EnttityStructs\n    // '0x1' --> 'foo', 0\n    // '0x2' --> 'bar', 1\n    // '0x3' --> 'baz', 2\n\n    // entityList\n    //[0x1,0x2,0x3]\n\n    // 0\n    uint rowToDelete = entityStructs[entityAddress].listPointer;\n    \n    // 0x3\n    address keyToMove   = entityList[entityList.length-1];\n    \n    // entityLIst = [0x3,0x2,0x3]\n    entityList[rowToDelete] = keyToMove;\n\n    //2 -->  0\n    entityStructs[keyToMove].listPointer = rowToDelete;\n    \n    // entityList = [0x3,0x2]\n    entityList.pop();\n\n    \n    //entityStructs\n    // '0x1' --> 'foo', 0\n    // '0x2' --> 'bar', 1\n    // '0x3' --> 'baz', 0\n    return true;\n  }\n  */\n}"
+      }
+    },
+    "settings": {
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ],
+          "": [
+            "ast"
+          ]
+        }
+      }
+    }
+  },
+  "output": {
+    "contracts": {
+      "contracts/CrudTest.sol": {
+        "mappedWithUnorderedIndexAndDelete": {
+          "abi": [],
+          "evm": {
+            "bytecode": {
+              "generatedSources": [],
+              "linkReferences": {},
+              "object": "6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220567f2c6d041bc02a2e121a8c8d7b38fb3396f8a584763a84271c8e893f23fd4a64736f6c63430008040033",
+              "opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH1 0xF JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x3F DUP1 PUSH1 0x1D PUSH1 0x0 CODECOPY PUSH1 0x0 RETURN INVALID PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x0 DUP1 REVERT INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 JUMP PUSH32 0x2C6D041BC02A2E121A8C8D7B38FB3396F8A584763A84271C8E893F23FD4A6473 PUSH16 0x6C634300080400330000000000000000 ",
+              "sourceMap": "56:1744:0:-:0;;;;;;;;;;;;;;;;;;;"
+            },
+            "deployedBytecode": {
+              "generatedSources": [],
+              "immutableReferences": {},
+              "linkReferences": {},
+              "object": "6080604052600080fdfea2646970667358221220567f2c6d041bc02a2e121a8c8d7b38fb3396f8a584763a84271c8e893f23fd4a64736f6c63430008040033",
+              "opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x0 DUP1 REVERT INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 JUMP PUSH32 0x2C6D041BC02A2E121A8C8D7B38FB3396F8A584763A84271C8E893F23FD4A6473 PUSH16 0x6C634300080400330000000000000000 ",
+              "sourceMap": "56:1744:0:-:0;;;;;"
+            },
+            "methodIdentifiers": {}
+          },
+          "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/CrudTest.sol\":\"mappedWithUnorderedIndexAndDelete\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/CrudTest.sol\":{\"keccak256\":\"0x44df320f41e6566a79087c8e1324c328882f707bcceba83ca0251a2468f2bf1a\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://85cb446ba079e53f81c142645ec93bf0ea09e235610c4817ff79a93f4be02d7b\",\"dweb:/ipfs/QmXmEUbz2RkL6CJPEqePuWA8m3tJJQBCPA5oeVucKMw4eV\"]}},\"version\":1}"
+        }
+      }
+    },
+    "sources": {
+      "contracts/CrudTest.sol": {
+        "ast": {
+          "absolutePath": "contracts/CrudTest.sol",
+          "exportedSymbols": {
+            "mappedWithUnorderedIndexAndDelete": [
+              2
+            ]
+          },
+          "id": 3,
+          "license": "MIT",
+          "nodeType": "SourceUnit",
+          "nodes": [
+            {
+              "id": 1,
+              "literals": [
+                "solidity",
+                "^",
+                "0.8",
+                ".4"
+              ],
+              "nodeType": "PragmaDirective",
+              "src": "32:23:0"
+            },
+            {
+              "abstract": false,
+              "baseContracts": [],
+              "contractDependencies": [],
+              "contractKind": "contract",
+              "fullyImplemented": true,
+              "id": 2,
+              "linearizedBaseContracts": [
+                2
+              ],
+              "name": "mappedWithUnorderedIndexAndDelete",
+              "nameLocation": "65:33:0",
+              "nodeType": "ContractDefinition",
+              "nodes": [],
+              "scope": 3,
+              "src": "56:1744:0",
+              "usedErrors": []
+            }
+          ],
+          "src": "32:1768:0"
+        },
+        "id": 0
+      }
+    }
+  }
+}
