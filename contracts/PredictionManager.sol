@@ -39,9 +39,10 @@ contract PredictionManager {
     return predList.length;
   }
   
-  function foo(address entityAddress) public returns (bool){
+  function foo(address entityAddress) public returns (bool success){
        
        predList.push(entityAddress);
+       return success;
   }
   function newBid(Prediction memory pred) public payable returns(bool success) {
     
@@ -111,9 +112,9 @@ contract PredictionManager {
     // '0x3' --> 'baz', 0
     return true;
   }
-  function returnResults(address payable sourceAddr, uint pointer) public returns (bool success) {
+  function returnResults(address payable sourceAddr) public returns (bool success) {
     
-    Prediction memory pred = predictions[predList[pointer]];
+    Prediction memory pred = predictions[sourceAddr];
     
     //TODO: This should check if the game is final
     require(pred.isFinal,'Cannot return payouts for a matched bid until the game is final.');

@@ -8,7 +8,8 @@
 
 .background-grey {
   background-color: black;
-  height: 300vh;
+  height: 100%;
   width: 100%;
   color: lightblue;
+  resize:vertical;
 }

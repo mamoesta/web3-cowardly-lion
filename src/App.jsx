@@ -31,12 +31,12 @@ const App = () => {
   const [showPreds, setShowPreds] = useState(false);
   const [predList, setPredList] = useState([]);
   // challenge settings
-  const [predId, setPredId] = useState("");
+  const [predAddr, setPredAddr] = useState("");
 
   const gameABI = gmABI.abi;
   const gameAddress = "0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0x04C89607413713Ec9775E14b954286519d836FEf";
+  const predictionAddress = "0xB82008565FdC7e44609fA118A4a681E92581e680";
   const [currentAccount, setCurrentAccount] = useState("");
 
   const isBackgroundDark = true;
@@ -70,14 +70,11 @@ const App = () => {
   const connectWallet = async () => {
     try {
       const { ethereum } = window;
-
       if (!ethereum) {
         alert("Get MetaMask!");
         return;
       }
-
       const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-
       console.log("Connected", accounts[0]);
       setCurrentAccount(accounts[0]);
     } catch (error) {
@@ -94,13 +91,13 @@ const App = () => {
   const handlePredSubmit = async (event) => {
     event.preventDefault();
     console.log(ethers.utils.parseEther(bidAmount).toString())
-    const pred = {"bidAddr": currentAccount, "challengerAddr":"0x0000000000000000000000000000000000000000","bidAmount": bidAmount, "challengerAmount": 0, "bidOdds":bidOdds,"bidGameWinner": "0x00", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true}
+    const pred = {"bidAddr": currentAccount, "challengerAddr":"0x0000000000000000000000000000000000000000","bidAmount": bidAmount, "challengerAmount": 0, "bidOdds":bidOdds,"gameWinner": "0x00", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true, listPointer:0}
     console.log("Here is the prediction: ", pred)
     await addPred(pred);
   }
   const handleChallengeSubmit = async (event) => {
     event.preventDefault();
-    await addChallenge(predId, currentAccount);
+    await addChallenge(predAddr);
   }
   const handleGameUpdate = async(event) => {
     event.preventDefault();
@@ -112,13 +109,12 @@ const App = () => {
     try {
       const {ethereum} = window;
       if (ethereum){
-        pred.id = 0
         pred.bidAmount = String(ethers.utils.parseEther(pred.bidAmount).toBigInt());
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
         const options = {value: pred.bidAmount};
-        const predTxn = await predAddressContract.receiveNewBid(pred, options);
+        const predTxn = await predAddressContract.newBid(pred, options);
         await predTxn.wait();
         console.log("Mined -- ", predTxn.hash);
       }
@@ -127,7 +123,7 @@ const App = () => {
       console.log(error)    
     }
   }
-  const addChallenge = async(predId, addr) => {
+  const addChallenge = async(predAddr) => {
     try {
       const {ethereum} = window;
       if (ethereum){
@@ -135,8 +131,8 @@ const App = () => {
         const signer = provider.getSigner();
         const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
         //const gameAddressContract = new ethers.Contract(gameAddress, gameABI, signer);
-        const options = {value: await predAddressContract.getMultiplier(predId)};
-        const challengeTxn = await predAddressContract.updateBidWithChallenger(String(predId), String(addr),options);
+        const options = {value: await predAddressContract.getMultiplier(predAddr)};
+        const challengeTxn = await predAddressContract.updateBidWithChallenger(String(predAddr), String(currentAccount),options);
         await challengeTxn.wait();
         console.log("Mined challenge --", challengeTxn.hash);
         console.log(await provider.getBalance(predictionAddress))
@@ -173,6 +169,7 @@ const App = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const predictionContract = new ethers.Contract(predictionAddress, predictionABI, signer);
+        //this isn't robust, only handles payouts based off of bidder executing the function
         const ret = await predictionContract.returnResults(currentAccount);
         await ret.wait();
         console.log("Mined -- ", ret.hash);
@@ -235,21 +232,24 @@ const App = () => {
           try{ 
             let predID = await predAddressContract.predList(parseInt(predCounter));
             //console.log(predID);
-            let predTxn = await predAddressContract.predictions(predID);
+            var predTxn = await predAddressContract.predictions(predID);
+            //predTxn.id = this.predCounter;
             predList.push(predTxn);
             predCounter++;
           }
           catch(error){
-            //console.log(error);
+            //console.log("error happened");
             isEmpty=true;
           }
         }
         if(predList.length < 1){
           console.log("There are no predictions right now!")
         }
+        else{
         console.log(predList);
         setPredList(predList);
         setShowPreds(true);
+        }
       }
       else {
         console.log('ethereum object does not exist')
@@ -354,7 +354,7 @@ const App = () => {
                 <th>Away Team</th>
                 <th>Home Score</th>
                 <th>Away Score</th>
-                <th>Is The Game Final?</th>
+                <th>Open for Bidding?</th>
               </tr>
             </thead>
             <tbody>
@@ -365,7 +365,7 @@ const App = () => {
                   <th>{game.awayTeam.toString()}</th>
                   <th>{game.homeScore.toString()}</th>
                   <th>{game.awayScore.toString()}</th>
-                  <th>{game.isFinal.toString()}</th>
+                  <th>{(!game.isFinal).toString()}</th>
                 </tr>
               ))}
             </tbody>
@@ -403,7 +403,7 @@ const App = () => {
               <h1> Submit a Challenge </h1>
               <FormGroup variant="dark" controlId="formChallenge">
                 <Form.Label>Bid Amount</Form.Label>
-                <Form.Control placeholder="Choose a prediction to challenger" value={predId} onChange={(e) => setPredId(e.target.value)} />
+                <Form.Control placeholder="Choose a prediction address to challenge" value={predAddr} onChange={(e) => setPredAddr(e.target.value)} />
               </FormGroup>
               <Button variant="outline-success" type="submit">
                 Submit Challenge 
@@ -426,7 +426,6 @@ const App = () => {
           <Table striped bordered hover variant="dark">
           <thead>
             <tr>
-              <th>#</th>
               <th>Bid Address</th>
               <th>Challenger Address</th>
               <th>Game ID</th>
@@ -434,20 +433,20 @@ const App = () => {
               <th>Bid Amount</th>
               <th>Challenger Amount</th>
               <th>Bidder Odds</th>
-              <th>Is the Bid Final?</th>
+              <th>Open for challengers?</th>
             </tr>
           </thead>
           <tbody>
             {predList.map((pred) =>(
-              <tr key = {pred.id}>
-                <th>{pred.bidAddr.toString().substring(32)}</th>
+              <tr key = {pred.listPointer}>
+                <th>{pred.bidAddr.toString()}</th>
                 <th>{pred.challengerAddr.toString().substring(32)}</th>
                 <th>{pred.gameID.toString()}</th>
                 <th> Home Team</th>
                 <th>{String(ethers.utils.formatEther(pred.bidAmount.toBigInt()))}</th>
                 <th>{String(ethers.utils.formatEther(pred.challengerAmount.toBigInt()))}</th>
                 <th>{pred.bidOdds.toString()} %</th>
-                <th>{pred.isFinal.toString()}</th>
+                <th>{(!pred.isFinal).toString()}</th>
               </tr>
             ))}
           </tbody>

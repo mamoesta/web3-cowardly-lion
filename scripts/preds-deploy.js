@@ -33,6 +33,9 @@ async function main() {
   ]
   for(let i =0; i<3; i++){
     await preds.connect(accounts[i+1]).newBid(dummyPreds[i])
+    const options = {value: await preds.getMultiplier(accounts[i+1].address)}
+    await preds.updateBidWithChallenger(String(accounts[i+1].address), String(owner.address), options)
+    //await preds.connect(accounts[i+1]).makeFinal(accounts[i+1].address)
   };
   console.log("Added dummy preds");
 }
