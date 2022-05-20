@@ -72,4 +72,15 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
       }
     });
   });
+  describe("Submitting a new bid from the same original bidder address", function () {
+    it("Should successfully submit a new bid from the same address that submitted the original bid.", async function () {
+      
+      newPred = {"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount": bet_amount,"bidOdds": 20, "gameWinner": owner.address, "gameID": 0, "bidWin": false, "hasChallenger": true, "isFinal": true, "listPointer":0}
+
+      console.log(await preds.predictions())
+      console.log(await preds.predList())
+      await preds.newBid(singlePred, {value: bet_amount})
+
+    });
+  });
 });

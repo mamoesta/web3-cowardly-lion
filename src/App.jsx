@@ -36,7 +36,7 @@ const App = () => {
   const gameABI = gmABI.abi;
   const gameAddress = "0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xB82008565FdC7e44609fA118A4a681E92581e680";
+  const predictionAddress = "0xd6e1afe5cA8D00A2EFC01B89997abE2De47fdfAf";
   const [currentAccount, setCurrentAccount] = useState("");
 
   const isBackgroundDark = true;
