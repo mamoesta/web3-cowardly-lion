@@ -27,8 +27,9 @@ contract PredictionManager {
     bool bidWin;
     bool hasChallenger;
     //bid is marked final once it's paid out.
-    bool isFinal;
+    bool gameIsFinal;
     uint listPointer;
+    bool isStale;
   }
   
   function hasBid (address entityAddress) public view returns (bool){
@@ -38,28 +39,46 @@ contract PredictionManager {
   function getPredCount() public view returns(uint predsCount) {
     return predList.length;
   }
-  
-  function foo(address entityAddress) public returns (bool success){
-       
-       predList.push(entityAddress);
-       return success;
+  function handleBidInfo(Prediction memory pred) public returns (bool success){
+    if(hasBid(msg.sender)){
+      updateStaleBid((pred));
+    }
+    else {
+      newBid(pred);
+    }
+    return true;
   }
+  
   function newBid(Prediction memory pred) public payable returns(bool success) {
-    
     require(!hasBid(msg.sender), "This address already has a bid");
     
     predList.push(msg.sender);
     pred.bidAddr = payable(msg.sender);
     pred.hasChallenger = false;
-    pred.isFinal = false;
+    pred.gameIsFinal = false;
     pred.bidOdds = pred.bidOdds;
     pred.bidWin = false;
+    pred.isStale = false;
     pred.listPointer =  (predList.length) - 1;
     predictions[msg.sender] = pred;
    
     return true;
   }
 
+  function updateStaleBid( Prediction memory pred ) public payable returns(bool success) {
+    require(hasBid(msg.sender), "This address already has a bid");
+    predictions[msg.sender].isStale = false;
+    pred.bidAddr = payable(msg.sender);
+    pred.hasChallenger = false;
+    pred.gameIsFinal = false;
+    pred.bidOdds = pred.bidOdds;
+    pred.bidWin = false;
+    pred.isStale = false;
+    predictions[msg.sender] = pred;
+   
+    return true;
+
+  }
   function updateBidWithChallenger(address bidAddress, address payable challengerAddr) public payable {
     console.log("Address sending in the challenge:", msg.sender);
     predictions[bidAddress].challengerAddr = challengerAddr;
@@ -70,7 +89,6 @@ contract PredictionManager {
     predictions[bidAddress].challengerAddr = challengerAddr;
     predictions[bidAddress].challengerAmount = amountMultiplied;
     predictions[bidAddress].hasChallenger = true;
-    predictions[bidAddress].isFinal = true;
     
     console.log("Bid amount:", predictions[bidAddress].bidAmount);
     console.log("Challenger amount:",predictions[bidAddress].challengerAmount);  
@@ -103,6 +121,7 @@ contract PredictionManager {
     predList[rowToDelete] = keyToMove;
     //2 -->  0
     predictions[keyToMove].listPointer = rowToDelete;
+    predictions[keyToMove].isStale = true;
     // entityList = [0x3,0x2]
     predList.pop();
     
@@ -117,14 +136,14 @@ contract PredictionManager {
     Prediction memory pred = predictions[sourceAddr];
     
     //TODO: This should check if the game is final
-    require(pred.isFinal,'Cannot return payouts for a matched bid until the game is final.');
+    require(pred.gameIsFinal,'Cannot return payouts for a matched bid until the game is final.');
     
     if(!pred.hasChallenger && sourceAddr == pred.bidAddr){
       console.log("No challenger!");
       uint amount = pred.bidAmount;
       (bool sent, ) = pred.bidAddr.call{value: amount}("");
       require(sent, "Failed to send Ether");
-      deleteBid(pred.bidAddr);
+      predictions[sourceAddr].isStale = true;
       return true;
     }
     else if (pred.bidAddr == sourceAddr && pred.bidWin){
@@ -133,8 +152,8 @@ contract PredictionManager {
       //(bool sent, ) = pred.challengerAddr.call{value: winAmount}("");
       //require(sent, "Failed to send Ether");
       sourceAddr.transfer(winAmount);
+      predictions[sourceAddr].isStale = true;
       console.log("Deleting the bid");
-      deleteBid(pred.bidAddr);
       return true;
     }
     else if (pred.challengerAddr == sourceAddr && !pred.bidWin) {
@@ -143,21 +162,20 @@ contract PredictionManager {
       //console.log(winAmount);
       //(bool sent, ) = pred.challengerAddr.call{value: 128 ether}("");
       //require(sent, "Failed to send Ether");
-      //hard-coded now because I'm an idiot
+      predictions[sourceAddr].isStale = true;
       sourceAddr.transfer(winAmount);
-      deleteBid(pred.bidAddr);
       return true;
     }
     else {
       console.log("Uncaught!");
-      deleteBid(pred.bidAddr);
+      predictions[sourceAddr].isStale = true;
       return false;
       // return the money to everyone - perhaps in the case of a tie or some other uncaught result
     }
   }
   function makeFinal(address entityAddress) public {
     
-    predictions[entityAddress].isFinal = true;
+    predictions[entityAddress].gameIsFinal = true;
   }
   function bidWin(address entityAddress) public {
     predictions[entityAddress].bidWin = true;

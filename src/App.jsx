@@ -10,7 +10,6 @@ import Form from 'react-bootstrap/Form'
 import {DropdownButton, Dropdown, FormGroup } from "react-bootstrap";
 import Button from 'react-bootstrap/Button';
 import Image from 'react-bootstrap/Image'
-import { isAddress } from "ethers/lib/utils";
 
 
 
@@ -34,9 +33,9 @@ const App = () => {
   const [predAddr, setPredAddr] = useState("");
 
   const gameABI = gmABI.abi;
-  const gameAddress = "0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc";
+  const gameAddress = "0xFD471836031dc5108809D173A067e8486B9047A3";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0xd6e1afe5cA8D00A2EFC01B89997abE2De47fdfAf";
+  const predictionAddress = "0x2bdCC0de6bE1f7D2ee689a0342D76F52E8EFABa3";
   const [currentAccount, setCurrentAccount] = useState("");
 
   const isBackgroundDark = true;
