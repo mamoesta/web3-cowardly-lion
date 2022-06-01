@@ -22,6 +22,8 @@ contract PredictionManager {
     uint bidAmount;
     uint challengerAmount;
     uint bidOdds;
+    
+    //this is terrible but I also use this value as who the bidder voted to win
     string gameWinner;
     uint gameID;
     bool bidWin;
@@ -39,7 +41,7 @@ contract PredictionManager {
   function getPredCount() public view returns(uint predsCount) {
     return predList.length;
   }
-  function handleBidInfo(Prediction memory pred) public returns (bool success){
+  function handleBidInfo(Prediction memory pred) public payable returns (bool success){
     if(hasBid(msg.sender)){
       updateStaleBid((pred));
     }
@@ -66,16 +68,20 @@ contract PredictionManager {
   }
 
   function updateStaleBid( Prediction memory pred ) public payable returns(bool success) {
-    require(hasBid(msg.sender), "This address already has a bid");
     predictions[msg.sender].isStale = false;
-    pred.bidAddr = payable(msg.sender);
-    pred.hasChallenger = false;
-    pred.gameIsFinal = false;
-    pred.bidOdds = pred.bidOdds;
-    pred.bidWin = false;
-    pred.isStale = false;
-    predictions[msg.sender] = pred;
-   
+    
+    predictions[msg.sender].bidAddr = payable(msg.sender);
+    predictions[msg.sender].bidWin = false;
+    predictions[msg.sender].bidOdds = pred.bidOdds;
+    predictions[msg.sender].bidAmount = pred.bidAmount;
+    predictions[msg.sender].hasChallenger = false;
+    predictions[msg.sender].challengerAddr = payable(address(0));
+    predictions[msg.sender].challengerAmount = 0;
+    
+    predictions[msg.sender].gameIsFinal = false;
+    predictions[msg.sender].gameID = pred.gameID;
+    predictions[msg.sender].isStale = false;
+    
     return true;
 
   }
@@ -93,6 +99,10 @@ contract PredictionManager {
     console.log("Bid amount:", predictions[bidAddress].bidAmount);
     console.log("Challenger amount:",predictions[bidAddress].challengerAmount);  
     console.log("Bid/challenger ratio:", (predictions[bidAddress].bidOdds * 100)/(100-predictions[bidAddress].bidOdds));
+    
+    //temp for hardcoding that the bidder wins each time
+    bidWin(bidAddress);
+    makeFinal(bidAddress);
   }
   function getMultiplier(address entityAddress) public view returns (uint response){
     Prediction memory halfBakedPred = predictions[entityAddress];
@@ -131,7 +141,7 @@ contract PredictionManager {
     // '0x3' --> 'baz', 0
     return true;
   }
-  function returnResults(address payable sourceAddr) public returns (bool success) {
+  function returnResults(address payable sourceAddr) public payable returns (bool success) {
     
     Prediction memory pred = predictions[sourceAddr];
     
@@ -162,8 +172,8 @@ contract PredictionManager {
       //console.log(winAmount);
       //(bool sent, ) = pred.challengerAddr.call{value: 128 ether}("");
       //require(sent, "Failed to send Ether");
-      predictions[sourceAddr].isStale = true;
       sourceAddr.transfer(winAmount);
+      predictions[sourceAddr].isStale = true;
       return true;
     }
     else {

@@ -7,9 +7,10 @@ import Container from 'react-bootstrap/Container';
 import Table from 'react-bootstrap/Table';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Form from 'react-bootstrap/Form'
-import {DropdownButton, Dropdown, FormGroup } from "react-bootstrap";
+import {DropdownButton, Dropdown, FormGroup, Row, Col, Modal } from "react-bootstrap";
 import Button from 'react-bootstrap/Button';
 import Image from 'react-bootstrap/Image'
+import Card from 'react-bootstrap/Card'
 
 
 
@@ -21,21 +22,25 @@ const App = () => {
   const [awayScore, setAwayScore] = useState("");
   const [gameId, setGameId] = useState("");
   //Prediction settings
-  const [bidTeam, setBidTeam] = useState("Home Team")
+  const [bidTeam, setBidTeam] = useState("")
   const [bidAmount, setBidAmount] = useState("");
   const [bidOdds, setBidOdds] = useState("");
   const [predGameID, setPredGameID] = useState("");
+  const [tempGame, setTempGame] = useState({});
   const [showGames, setShowGames] = useState(false);
   const [gameList, setGameList] = useState([]);
   const [showPreds, setShowPreds] = useState(false);
   const [predList, setPredList] = useState([]);
-  // challenge settings
+  
+  // challenger settings
   const [predAddr, setPredAddr] = useState("");
+  
+  const [showModal, setShowModal] = useState(false);
 
   const gameABI = gmABI.abi;
-  const gameAddress = "0xFD471836031dc5108809D173A067e8486B9047A3";
+  const gameAddress = "0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9";
   const predictionABI = predABI.abi;
-  const predictionAddress = "0x2bdCC0de6bE1f7D2ee689a0342D76F52E8EFABa3";
+  const predictionAddress = "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575";
   const [currentAccount, setCurrentAccount] = useState("");
 
   const isBackgroundDark = true;
@@ -50,7 +55,7 @@ const App = () => {
         console.log("Make sure you have metamask!");
         return;
       } else {
-        console.log("We have the ethereum object", ethereum);
+        // the ethereum object", ethereum);
       }
 
       const accounts = await ethereum.request({ method: "eth_accounts" });
@@ -88,9 +93,10 @@ const App = () => {
   }
 
   const handlePredSubmit = async (event) => {
+    handleClose();
     event.preventDefault();
     console.log(ethers.utils.parseEther(bidAmount).toString())
-    const pred = {"bidAddr": currentAccount, "challengerAddr":"0x0000000000000000000000000000000000000000","bidAmount": bidAmount, "challengerAmount": 0, "bidOdds":bidOdds,"gameWinner": "0x00", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true, listPointer:0}
+    const pred = {"bidAddr": currentAccount, "challengerAddr":"0x0000000000000000000000000000000000000000","bidAmount": bidAmount, "challengerAmount": 0, "bidOdds":bidOdds,"gameWinner": "Tigers", "gameID": predGameID, "bidWin": true, "hasChallenger": true, "isFinal": true, listPointer:0}
     console.log("Here is the prediction: ", pred)
     await addPred(pred);
   }
@@ -113,7 +119,7 @@ const App = () => {
         const signer = provider.getSigner();
         const predAddressContract = new ethers.Contract(predictionAddress, predictionABI, signer);
         const options = {value: pred.bidAmount};
-        const predTxn = await predAddressContract.newBid(pred, options);
+        const predTxn = await predAddressContract.handleBidInfo(pred, options);
         await predTxn.wait();
         console.log("Mined -- ", predTxn.hash);
       }
@@ -233,8 +239,11 @@ const App = () => {
             //console.log(predID);
             var predTxn = await predAddressContract.predictions(predID);
             //predTxn.id = this.predCounter;
-            predList.push(predTxn);
+            if(!predTxn.isStale){
+              predList.push(predTxn);
+            }
             predCounter++;
+
           }
           catch(error){
             //console.log("error happened");
@@ -277,8 +286,15 @@ const App = () => {
       console.log(error)
     }
   }
+  const handleClose = () => setShowModal(false);
+  const handleShow = (data) =>  {
+    setTempGame(data);
+    setPredGameID(data.id);
+    setShowModal(true);
+  };
   useEffect(() => {
     checkIfWalletIsConnected();
+    
   }, [])
   return(
     <body className={isBackgroundDark ? 'background-grey' : 'background-white'}>
@@ -293,26 +309,7 @@ const App = () => {
               Connect Wallet
             </Button>
           )}
-        {currentAccount && (
-          <Container>
-            <Form onSubmit={handleGameSubmit}>
-              <h1> Submit a Game </h1>
-              <FormGroup variant="dark" controlId="formNewGame">
-                <Form.Label>Home Team</Form.Label>
-                <Form.Control placeholder="Home Team" value={homeTeam} onChange={(e) => setHomeTeam(e.target.value)} />
-                <Form.Label>Away Team</Form.Label>
-                <Form.Control placeholder="Away Team" value={awayTeam} onChange={(e) => setAwayTeam(e.target.value)} />
-                <Form.Label>Home Score</Form.Label>
-                <Form.Control placeholder="Home Score" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
-                <Form.Label>Away Score</Form.Label>
-                <Form.Control placeholder="Away Score" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
-              </FormGroup>
-              <Button variant="outline-success" type="submit">
-                Submit a New Game
-              </Button>
-            </Form>
-          </Container>
-        )}
+
         <br></br>
         {currentAccount && (
           <Container>
@@ -343,58 +340,51 @@ const App = () => {
           </Container>
         )}
         <br></br>
-        <br></br>
         {currentAccount && showGames &&  ( 
-          <Table striped bordered hover variant="dark">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Home Team</th>
-                <th>Away Team</th>
-                <th>Home Score</th>
-                <th>Away Score</th>
-                <th>Open for Bidding?</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Row xs={1} md={2} className="g-3">
               {gameList.map((game) =>(
-                <tr key={game.id}>
-                  <th>{game.id.toString()}</th>
-                  <th>{game.homeTeam.toString()}</th>
-                  <th>{game.awayTeam.toString()}</th>
-                  <th>{game.homeScore.toString()}</th>
-                  <th>{game.awayScore.toString()}</th>
-                  <th>{(!game.isFinal).toString()}</th>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+                 <Col key = {game.id}>
+                  <Card bg="dark" style={{ width: '20 rem', height:'20 rem' }}>
+                    <Card.Body>
+                      <Card.Title>{game.homeTeam.toString()} vs. {game.awayTeam.toString()}</Card.Title>
+                      <Card.Text>Game ID: {game.id.toString()}</Card.Text>
+                      <Button variant="primary" onClick={()=>handleShow(game)}>
+                        Make a Prediction
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </Col> 
+                ))}
+          </Row>
         )}
-        <br></br>
-        {currentAccount && (
-          <Container>
+        <Modal show={showModal} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>{tempGame.awayTeam} @ {tempGame.homeTeam}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
             <Form onSubmit={handlePredSubmit}>
-              <h1> Submit a Bid </h1>
               <FormGroup variant="dark" controlId="formBid">
-              <Form.Label>Game ID:</Form.Label>
-                <Form.Control placeholder="Which Game would you like to bid on?" value={predGameID} onChange={(e) => setPredGameID(e.target.value)}/>
-                <Form.Label>Pick your winner!</Form.Label>
-                <DropdownButton id="dropdown-basic-button" variant="dark" title={bidTeam} >
-                  <Dropdown.Item href="#/action-1" onClick={(e => setBidTeam("Home Team"))} value="Home Team"> Home Team</Dropdown.Item>
-                  <Dropdown.Item href="#/action-2" onClick={(e => setBidTeam("Away Team"))}>Away Team</Dropdown.Item>
-                </DropdownButton>
-                <Form.Label>Bid Amount</Form.Label>
-                <Form.Control placeholder="Enter a bid amount (in ETH)" value={bidAmount} onChange={(e) => setBidAmount(e.target.value)} />
-                <Form.Label>Bid Odds</Form.Label>
-                <Form.Control placeholder="What % chance do you think your team has to win? (out of 100)" value={bidOdds} onChange={(e) => setBidOdds(e.target.value)} />
-
+                    <Form.Label>Pick your winner!</Form.Label>
+                    <DropdownButton id="dropdown-basic-button" variant="dark" title={bidTeam} >
+                      <Dropdown.Item href="#" onClick={(e) => setBidTeam(tempGame.homeTeam)}> {tempGame.homeTeam}</Dropdown.Item>
+                      <Dropdown.Item href="#" onClick={(e => setBidTeam(tempGame.awayTeam))}>{tempGame.awayTeam}</Dropdown.Item>
+                    </DropdownButton>
+                    <Form.Label>Bid Amount</Form.Label>
+                    <Form.Control placeholder="Enter a bid amount (in ETH)" value={bidAmount} onChange={(e) => setBidAmount(e.target.value)} />
+                    <Form.Label>Bid Odds</Form.Label>
+                    <Form.Control placeholder=" % chance to win? (out of 100)" value={bidOdds} onChange={(e) => setBidOdds(e.target.value)} />
               </FormGroup>
-              <Button variant="outline-success" type="submit">
-                Submit Bid 
-              </Button>
             </Form>
-          </Container>
-        )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handlePredSubmit}>
+              Submit Prediction
+            </Button>
+          </Modal.Footer>
+        </Modal>
         <br></br>
         {currentAccount && (
           <Container>
@@ -445,7 +435,7 @@ const App = () => {
                 <th>{String(ethers.utils.formatEther(pred.bidAmount.toBigInt()))}</th>
                 <th>{String(ethers.utils.formatEther(pred.challengerAmount.toBigInt()))}</th>
                 <th>{pred.bidOdds.toString()} %</th>
-                <th>{(!pred.isFinal).toString()}</th>
+                <th>{(!pred.hasChallenger).toString()}</th>
               </tr>
             ))}
           </tbody>

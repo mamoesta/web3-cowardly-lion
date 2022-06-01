@@ -41,7 +41,7 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
   });
   describe("E2E Happy path\n", function() {
     
-    it("Create new bid, fill it with a challenger, finalize and pay out to bidder", async function (){
+    it("Creates a new bid, fill it with a challenger, finalize and pay out to bidder", async function (){
       
       singlePred = {"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount": bet_amount,"bidOdds": 50, "gameWinner": owner.address, "gameID": 0, "bidWin": false, "hasChallenger": true, "isLocked": true, "listPointer":0, isStale: false}
       singleGame = {"id":0,"homeTeam":"Giants","awayTeam":"Tigers","homeScore":10, "awayScore":6,"isLocked":true,"isLocked":true, "startTime":30303030}
@@ -77,7 +77,7 @@ describe("\nGetting started with Prediction and Game contracts\n", function (){
         newPred = {"bidAddr": owner.address,"challengerAddr": addr1.address, "bidAmount": bet_amount,"challengerAmount": bet_amount,"bidOdds": 20, "gameWinner": owner.address, "gameID": 0, "bidWin": false, "hasChallenger": true, "isLocked": true, "listPointer":0, isStale: false}
         //console.log("Game:" , await games.getGame(0))
         
-        await preds.newBid(newPred, {value: bet_amount})
+        await preds.handleBidInfo(newPred, {value: bet_amount})
         //console.log(await preds.predictions(owner.address))
         //console.log(await preds.predList(0))
 
