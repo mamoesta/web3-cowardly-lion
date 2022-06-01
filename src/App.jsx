@@ -313,25 +313,6 @@ const App = () => {
         <br></br>
         {currentAccount && (
           <Container>
-          <Form onSubmit={handleGameUpdate}>
-            <h1>Finalize a Game </h1>
-            <FormGroup variant="dark" controlId="formNewGame">
-              <Form.Label>Game Id</Form.Label>
-              <Form.Control placeholder="Game Id" value={gameId} onChange={(e) => setGameId(e.target.value)} />
-              <Form.Label>Home Score</Form.Label>
-              <Form.Control placeholder="Home Score" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
-              <Form.Label>Away Score</Form.Label>
-              <Form.Control placeholder="Away Score" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
-            </FormGroup>
-            <Button variant="outline-success" type="submit">
-              Finalize Game
-            </Button>
-          </Form>
-        </Container>
-        )}
-        <br></br>
-        {currentAccount && (
-          <Container>
             <Form onSubmit={getGames}>
               <Button variant="outline-primary" type="submit">
                 Get All Games
@@ -357,12 +338,12 @@ const App = () => {
                 ))}
           </Row>
         )}
-        <Modal show={showModal} onHide={handleClose}>
+        <Modal show={showModal} onHide={handleClose} bg="dark">
           <Modal.Header closeButton>
             <Modal.Title>{tempGame.awayTeam} @ {tempGame.homeTeam}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form onSubmit={handlePredSubmit}>
+            <Form >
               <FormGroup variant="dark" controlId="formBid">
                     <Form.Label>Pick your winner!</Form.Label>
                     <DropdownButton id="dropdown-basic-button" variant="dark" title={bidTeam} >
@@ -380,7 +361,7 @@ const App = () => {
             <Button variant="secondary" onClick={handleClose}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handlePredSubmit}>
+            <Button variant="success"  onClick={handlePredSubmit}>
               Submit Prediction
             </Button>
           </Modal.Footer>
@@ -399,6 +380,26 @@ const App = () => {
               </Button>
             </Form>
           </Container>
+        )}
+        <br></br>
+        
+        {currentAccount && (
+          <Container>
+          <Form onSubmit={handleGameUpdate}>
+            <h1>Finalize a Game </h1>
+            <FormGroup variant="dark" controlId="formNewGame">
+              <Form.Label>Game Id</Form.Label>
+              <Form.Control placeholder="Game Id" value={gameId} onChange={(e) => setGameId(e.target.value)} />
+              <Form.Label>Home Score</Form.Label>
+              <Form.Control placeholder="Home Score" value={homeScore} onChange={(e) => setHomeScore(e.target.value)}/>
+              <Form.Label>Away Score</Form.Label>
+              <Form.Control placeholder="Away Score" value={awayScore} onChange={(e) => setAwayScore(e.target.value)}/>
+            </FormGroup>
+            <Button variant="outline-success" type="submit">
+              Finalize Game
+            </Button>
+          </Form>
+        </Container>
         )}
         <br></br>
         {currentAccount && (
